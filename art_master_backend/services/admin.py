@@ -8,7 +8,6 @@ from .models import (Activity,
                      Review,
                      Service,
                      Tag,
-                     TagActivity,
                      TagService)
 
 
@@ -71,14 +70,6 @@ class ActivityServiceAdmin(admin.ModelAdmin):
     list_display = ('id', 'activity', 'service')
     search_fields = ('activity', 'service')
     list_filter = ('activity', 'service')
-    empty_value_display = '-пусто-'
-
-
-@admin.register(TagActivity)
-class TagActivityAdmin(admin.ModelAdmin):
-    list_display = ('id', 'tag', 'activity')
-    search_fields = ('tag', 'activity')
-    list_filter = ('tag', 'activity')
     empty_value_display = '-пусто-'
 
 

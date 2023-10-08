@@ -1,0 +1,219 @@
+import webcolors
+
+from django.shortcuts import get_object_or_404
+
+from drf_extra_fields.fields import Base64ImageField
+
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from rest_framework.validators import UniqueTogetherValidator
+
+from djoser.serializers import UserSerializer, UserCreateSerializer
+
+from .utils import get_validated_field
+
+from services.models import (Activity,
+                             Comment,
+                             Location,
+                             Review,
+                             Service,
+                             Tag)
+
+from users.models import CustomUser
+
+
+class Hex2NameColor(serializers.Field):
+    """Кастомное поле для преобразования цветового кода."""
+
+    def to_representation(self, value):
+        return value
+
+    def to_internal_value(self, data):
+        try:
+            data = webcolors.hex_to_name(data)
+        except ValueError:
+            raise serializers.ValidationError('Для этого цвета нет имени')
+        return data
+
+
+class CustomUserSerializer(UserSerializer):
+    """Кастомный сериализатор для пользователей."""
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ('id',
+                  'username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'is_subscribed')
+
+    def get_is_subscribed(self, master):
+        user = self.context['request'].user
+        if user.is_anonymous:
+            return False
+        return user.subscriptions.filter(master=master).exists()
+
+
+class RegisterUserSerializer(UserCreateSerializer):
+    """Кастомный сериализатор для регистрации пользователя."""
+
+    class Meta:
+        model = CustomUser
+        fields = ('id',
+                  'username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'password')
+
+
+class TagSerializer(serializers.ModelSerializer):
+    """Сериализатор для тегов."""
+    color = Hex2NameColor()
+
+    class Meta:
+        model = Tag
+        fields = ('id',
+                  'name',
+                  'slug',
+                  'color')
+
+
+class ActivitySerializer(serializers.ModelSerializer):
+    """Сериализатор для ингредиентов."""
+
+    class Meta:
+        model = Activity
+        fields = ('id',
+                  'name',
+                  'description',
+                  'slug')
+
+
+class ServiceSerializer(serializers.ModelSerializer):
+    "Сериализатор для создания-обновления Сервиса."
+    activities = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField()
+    locations = serializers.SerializerMethodField()
+    image = Base64ImageField()
+    master = CustomUserSerializer(
+        default=serializers.CurrentUserDefault()
+    )
+    # is_favorited = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Service
+        fields = ('id',
+                  'name',
+                  'description',
+                  'master',
+                  'activities',
+                  'tags',
+                  'locations',
+                  'is_favorited',
+                  'created')
+
+        validators = [
+            UniqueTogetherValidator(queryset=Service.objects.all(),
+                                    fields=['master', 'name'])
+        ]
+
+    def validate(self, data):
+        tags_list = self.initial_data.get('tags')
+        activities_list = self.initial_data.get('activities')
+        locations_list = self.initial_data.get('locations')
+
+        tags = get_validated_field(tags_list, Tag)
+        activities = get_validated_field(activities_list, Activity)
+        locations = get_validated_field(locations_list, Location)
+
+        data.update({'tags': tags,
+                     'activities': activities,
+                     'locations': locations})
+
+        return data
+
+    def create(self, validated_data):
+        tags_list = validated_data.pop('tags')
+        activity_list = validated_data.pop('activities')
+        location_list = validated_data.pop('locations')
+        service = Service.objects.create(**validated_data)
+
+        service.tags.set(tags_list)
+        service.activities.set(activity_list)
+        service.locations.set(location_list)
+
+        return service
+
+    def update(self, instance, validated_data):
+        tags_list = validated_data.pop('tags')
+        activity_list = validated_data.pop('activities')
+        location_list = validated_data.pop('locations')
+        instance = super().update(instance, validated_data)
+        instance.save()
+
+        instance.tags.clear()
+        instance.tags.set(tags_list)
+
+        instance.activities.clear()
+        instance.activities.set(activity_list)
+
+        instance.locations.clear()
+        instance.activities.set(location_list)
+
+        return instance
+
+    def get_tags(self, service):
+        return service.tags.values()
+
+    def get_activities(self, service):
+        return service.activities.values()
+
+    def get_locations(self, service):
+        return service.locations.values()
+
+    # def get_is_favorited(self, recipe):
+    #     user = self.context['request'].user
+    #     if user.is_anonymous:
+    #         return False
+    #     return user.favorite_recipes.filter(recipe=recipe).exists()
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для отзывов к Сервисам."""
+    author = serializers.SlugRelatedField(
+        default=serializers.CurrentUserDefault(),
+        slug_field='username',
+        read_only=True
+    )
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'score', 'author', 'pub_date')
+
+    def validate(self, data):
+        request = self.context['request']
+        author = request.user
+        service = get_object_or_404(
+            Service, pk=self.context['view'].kwargs.get('id')
+        )
+        if request.method == 'POST':
+            if Review.objects.filter(service=service, author=author):
+                raise ValidationError('Можно оставить только один отзыв')
+        return data
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор для комментариев к отзывам."""
+    review = ReviewSerializer(read_only=True)
+    author = serializers.SlugRelatedField(
+        default=serializers.CurrentUserDefault(),
+        slug_field='username',
+        read_only=True
+    )
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'review', 'text', 'author', 'pub_date')

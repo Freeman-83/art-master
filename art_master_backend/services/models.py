@@ -24,10 +24,8 @@ class Tag(models.Model):
 class Activity(models.Model):
     """Модель вида деятельности."""
     name = models.CharField('Вид деятельности', unique=True, max_length=256)
-    tags = models.ManyToManyField(
-        Tag,
-        through='TagActivity',
-        verbose_name='Теги')
+    description = models.TextField('Описание', null=False, blank=False)
+    slug = models.SlugField('Slug', unique=True, max_length=200)
 
     class Meta:
         ordering = ['name']
@@ -83,13 +81,13 @@ class Service(models.Model):
 
 class Review(models.Model):
     """Модель отзыва."""
-    text = models.TextField('Текст')
     service = models.ForeignKey(
         Service,
         verbose_name='Сервис',
         on_delete=models.CASCADE,
         related_name='reviews'
     )
+    text = models.TextField('Текст')
     score = models.PositiveSmallIntegerField(
         'Оценка', validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
@@ -138,31 +136,6 @@ class Comment(models.Model):
         ordering = ['pub_date']
         verbose_name = 'Comment'
         verbose_name_plural = 'Comments'
-
-
-class TagActivity(models.Model):
-    """Модель отношений Тег-Вид деятельности."""
-    tag = models.ForeignKey(
-        Tag,
-        on_delete=models.CASCADE,
-        related_name='in_activities'
-    )
-    activity = models.ForeignKey(
-        Activity,
-        on_delete=models.CASCADE,
-        related_name='in_tags'
-    )
-
-    class Meta:
-        ordering = ['tag']
-        verbose_name_plural = 'Tags Activities'
-        constraints = [
-            models.UniqueConstraint(fields=['tag', 'activity'],
-                                    name='unique_tag_activity')
-        ]
-
-    def __str__(self):
-        return f'{self.tag} {self.activity}'
 
 
 class TagService(models.Model):
@@ -235,3 +208,27 @@ class LocationService(models.Model):
             models.UniqueConstraint(fields=['location', 'service'],
                                     name='unique_location_service')
         ]
+
+
+class Favorite(models.Model):
+    "Модель избранных Сервисов."
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='favorite_services'
+    )
+    service = models.ForeignKey(
+        Service,
+        on_delete=models.CASCADE,
+        related_name='in_favorite_for_users'
+    )
+
+    class Meta:
+        ordering = ['service']
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'service'],
+                                    name='unique_favorite')
+        ]
+
+    def __str__(self):
+        return f'{self.user} {self.service}'

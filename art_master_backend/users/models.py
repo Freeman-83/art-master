@@ -11,6 +11,8 @@ class CustomUser(AbstractUser):
     ROLE_CHOICES = [(USER, 'user'),
                     (MASTER, 'master'),
                     (ADMIN, 'admin'),]
+    first_name = models.CharField('Имя', max_length=150)
+    last_name = models.CharField('Фамилия', max_length=150)
     email = models.EmailField(
         _('email address'),
         max_length=254,
