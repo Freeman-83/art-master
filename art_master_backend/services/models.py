@@ -65,6 +65,7 @@ class Service(models.Model):
         through='LocationService',
         verbose_name='Локации'
     )
+    image = models.ImageField('Фото', upload_to='services/image/')
     created = models.DateTimeField(
         'Дата размещения информации', auto_now_add=True, db_index=True
     )

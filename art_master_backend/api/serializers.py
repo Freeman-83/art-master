@@ -112,7 +112,7 @@ class ServiceSerializer(serializers.ModelSerializer):
                   'activities',
                   'tags',
                   'locations',
-                  'is_favorited',
+                  'image',
                   'created')
 
         validators = [
