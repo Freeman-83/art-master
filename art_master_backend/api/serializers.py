@@ -70,7 +70,7 @@ class RegisterUserSerializer(UserCreateSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    """Сериализатор для тегов."""
+    """Сериализатор для Тегов."""
     color = Hex2NameColor()
 
     class Meta:
@@ -82,7 +82,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class ActivitySerializer(serializers.ModelSerializer):
-    """Сериализатор для ингредиентов."""
+    """Сериализатор для Активностей."""
 
     class Meta:
         model = Activity
@@ -93,7 +93,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 
 class ServiceSerializer(serializers.ModelSerializer):
-    "Сериализатор для создания-обновления Сервиса."
+    """Сериализатор для создания-обновления Сервисов."""
     activities = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
     locations = serializers.SerializerMethodField()
