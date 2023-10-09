@@ -11,6 +11,16 @@ from .models import (Activity,
                      TagService)
 
 
+class TagInService(admin.TabularInline):
+    model = TagService
+    min_num = 1
+
+
+class ActivityInService(admin.TabularInline):
+    model = ActivityService
+    min_num = 1
+
+
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
@@ -40,11 +50,19 @@ class LocationAdmin(admin.ModelAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'master', 'created')
+    list_display = (
+        'id', 'name', 'master', 'created', 'additions_in_favorite_count'
+    )
     list_display_links = ('name',)
     search_fields = ('name', 'master')
     list_filter = ('name', 'master')
     empty_value_display = '-пусто-'
+
+    inlines = [ActivityInService, TagInService]
+
+    @admin.display(description='Количество добавлений в избранное')
+    def additions_in_favorite_count(self, service):
+        return service.in_favorite_for_users.all().count()
 
 
 @admin.register(Review)
