@@ -1,6 +1,8 @@
 from django.shortcuts import get_object_or_404
 
-from rest_framework import permissions, viewsets
+from djoser.views import UserViewSet
+
+from rest_framework import pagination, permissions, viewsets
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -20,23 +22,30 @@ from .serializers import (ActivitySerializer,
                           ServiceSerializer,
                           TagSerializer)
 
-from .permissions import IsAdminOrAuthorOrReadOnly
+from .permissions import IsAdminOrMasterOrReadOnly, IsAdminOrAuthorOrReadOnly
 
 from .utils import create_relation, delete_relation
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
-    "Кастомный вьюсет для пользователей."
+class CustomUserViewSet(UserViewSet):
+    """Кастомный вьюсет для пользователей.
+    (запрос на получение списка пользователей/пользователя
+    настроен на получение профилей со статусом <мастер>)."""
     serializer_class = CustomUserSerializer
     queryset = CustomUser.objects.all()
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-    # pagination_class = CustomPagination
+    pagination_class = pagination.PageNumberPagination
+
+    def get_queryset(self):
+        if self.action in ['list', 'retrieve']:
+            return CustomUser.objects.filter(role='master')
+        return super().get_queryset()
 
     @action(methods=['post', 'delete'],
             detail=True,
             permission_classes=[permissions.IsAuthenticated, ])
     def subscribe(self, request, id):
-        master = get_object_or_404(CustomUser, pk=id)
+        master = get_object_or_404(CustomUser, pk=id, role='master')
         if request.user != master:
             if request.method == 'POST':
                 return create_relation(request,
@@ -70,14 +79,14 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    "Вьюсет для Тегов."
+    """Вьюсет для Тегов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
 
 
 class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
-    "Вьюсет для Активностей."
+    """Вьюсет для Активностей."""
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
     pagination_class = None
@@ -93,8 +102,8 @@ class ServiceViewSet(viewsets.ModelViewSet):
         'tags', 'activities', 'locations'
     ).all()
     serializer_class = ServiceSerializer
-    permission_classes = (IsAdminOrAuthorOrReadOnly,)
-    # pagination_class = CustomPagination
+    permission_classes = (IsAdminOrMasterOrReadOnly,)
+    pagination_class = pagination.PageNumberPagination
     # filter_backends = (DjangoFilterBackend,)
     # filterset_class = RecipeFilterSet
 
@@ -117,7 +126,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    """Вьюсет для отзывов к произведениям."""
+    """Вьюсет для отзывов к Сервисам."""
     serializer_class = ReviewSerializer
     permission_classes = (IsAdminOrAuthorOrReadOnly,)
 

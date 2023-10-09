@@ -36,24 +36,15 @@ class Hex2NameColor(serializers.Field):
         return data
 
 
-class CustomUserSerializer(UserSerializer):
-    """Кастомный сериализатор для пользователей."""
-    is_subscribed = serializers.SerializerMethodField()
+class ServiceContextSerializer(serializers.ModelSerializer):
+    "Сериализатор для отображения профиля рецепта в других контекстах."
+    activities = serializers.StringRelatedField(many=True)
 
     class Meta:
-        model = CustomUser
+        model = Service
         fields = ('id',
-                  'username',
-                  'email',
-                  'first_name',
-                  'last_name',
-                  'is_subscribed')
-
-    def get_is_subscribed(self, master):
-        user = self.context['request'].user
-        if user.is_anonymous:
-            return False
-        return user.subscriptions.filter(master=master).exists()
+                  'name',
+                  'activities')
 
 
 class RegisterUserSerializer(UserCreateSerializer):
@@ -66,7 +57,62 @@ class RegisterUserSerializer(UserCreateSerializer):
                   'email',
                   'first_name',
                   'last_name',
-                  'password')
+                  'password'
+                  'role')
+
+
+class CustomUserSerializer(UserSerializer):
+    """Кастомный сериализатор для пользователей."""
+    services = ServiceContextSerializer(many=True, read_only=True)
+    subscribers_count = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ('id',
+                  'username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'role',
+                  'services',
+                  'subscribers_count',
+                  'is_subscribed')
+
+    def get_is_subscribed(self, master):
+        user = self.context['request'].user
+        if user.is_anonymous:
+            return False
+        return user.subscriptions.filter(master=master).exists()
+
+    def get_subscribers_count(self, master):
+        return master.subscribers.all().count()
+
+
+class CustomUserContextSerializer(UserSerializer):
+    """ Кастомный сериализатор для отображения профиля пользователя
+    в других контекстах."""
+    is_subscribed = serializers.SerializerMethodField()
+    subscribers_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ('id',
+                  'username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'subscribers_count',
+                  'is_subscribed')
+
+    def get_is_subscribed(self, master):
+        user = self.context['request'].user
+        if user.is_anonymous:
+            return False
+        return user.subscriptions.filter(master=master).exists()
+
+    def get_subscribers_count(self, master):
+        return master.subscribers.all().count()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -98,10 +144,10 @@ class ServiceSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     locations = serializers.SerializerMethodField()
     image = Base64ImageField()
-    master = CustomUserSerializer(
+    master = CustomUserContextSerializer(
         default=serializers.CurrentUserDefault()
     )
-    # is_favorited = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = Service
@@ -113,7 +159,8 @@ class ServiceSerializer(serializers.ModelSerializer):
                   'tags',
                   'locations',
                   'image',
-                  'created')
+                  'created',
+                  'is_favorited')
 
         validators = [
             UniqueTogetherValidator(queryset=Service.objects.all(),
@@ -174,11 +221,11 @@ class ServiceSerializer(serializers.ModelSerializer):
     def get_locations(self, service):
         return service.locations.values()
 
-    # def get_is_favorited(self, recipe):
-    #     user = self.context['request'].user
-    #     if user.is_anonymous:
-    #         return False
-    #     return user.favorite_recipes.filter(recipe=recipe).exists()
+    def get_is_favorited(self, service):
+        user = self.context['request'].user
+        if user.is_anonymous:
+            return False
+        return user.favorite_services.filter(service=service).exists()
 
 
 class ReviewSerializer(serializers.ModelSerializer):

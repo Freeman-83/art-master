@@ -14,7 +14,7 @@ class CustomUser(AbstractUser):
     first_name = models.CharField('Имя', max_length=150)
     last_name = models.CharField('Фамилия', max_length=150)
     email = models.EmailField(
-        _('email address'),
+        _('email'),
         max_length=254,
         unique=True,
         null=False,
@@ -56,7 +56,7 @@ class CustomUser(AbstractUser):
 
 
 class Subscribe(models.Model):
-    "Модель подписок."
+    """Модель подписок."""
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,

@@ -7,7 +7,7 @@ from users.models import CustomUser
 
 
 class Tag(models.Model):
-    """Модель тега."""
+    """Модель Тега."""
     name = models.CharField('Tag', unique=True, max_length=200)
     slug = models.SlugField('Slug', unique=True, max_length=200)
     color = ColorField('Цвет', unique=True, max_length=7)
@@ -22,7 +22,7 @@ class Tag(models.Model):
 
 
 class Activity(models.Model):
-    """Модель вида деятельности."""
+    """Модель Активности."""
     name = models.CharField('Вид деятельности', unique=True, max_length=256)
     description = models.TextField('Описание', null=False, blank=False)
     slug = models.SlugField('Slug', unique=True, max_length=200)
@@ -37,12 +37,12 @@ class Activity(models.Model):
 
 
 class Location(models.Model):
-    """Модель локации."""
+    """Модель Локации."""
     address = models.TextField('Адрес')
 
 
 class Service(models.Model):
-    """Модель сервиса."""
+    """Модель Сервиса."""
     name = models.CharField('Наименование услуги', max_length=256)
     description = models.TextField('Описание', null=False, blank=False)
     master = models.ForeignKey(
@@ -81,7 +81,7 @@ class Service(models.Model):
 
 
 class Review(models.Model):
-    """Модель отзыва."""
+    """Модель Отзыва."""
     service = models.ForeignKey(
         Service,
         verbose_name='Сервис',
@@ -115,7 +115,7 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    """Модель комментария к отзыву."""
+    """Модель Комментария к Отзыву."""
     review = models.ForeignKey(
         Review,
         verbose_name='Отзыв',
@@ -165,7 +165,7 @@ class TagService(models.Model):
 
 
 class ActivityService(models.Model):
-    """Модель отношений Вид деятельности-Сервис."""
+    """Модель отношений Активность-Сервис."""
     activity = models.ForeignKey(
         Activity,
         on_delete=models.CASCADE,
