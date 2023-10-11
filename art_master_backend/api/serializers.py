@@ -1,3 +1,4 @@
+# from rest_framework.fields import empty
 import webcolors
 
 from django.shortcuts import get_object_or_404
@@ -58,24 +59,22 @@ class RegisterUserSerializer(UserCreateSerializer):
                   'first_name',
                   'last_name',
                   'password',
-                  'role',
-                  'bio',
-                  'foto',
-                  'phone_number')
+                  'role',)
 
-    # def __init__(self, instance=None, data=..., **kwargs):
-    #     if self.Meta.fields['role'] == 'master':
-    #         super().__init__()
-    #     super().__init__(instance, data, **kwargs)
+    def __init__(self, data, instance=None, **kwargs):
+        role = data.get('role', 'user')
+        if role == 'master':
+            self.Meta.fields += ('bio', 'foto', 'phone_number',)
+        super().__init__(instance, data, **kwargs)
 
     def get_extra_kwargs(self):
-        role = self.initial_data.get('role')
-        value = {'required': True} if role == 'master' else {'write_only': True}
-        kwargs = {'bio': value,
-                  'foto': value,
-                  'phone_number': value}
-
-        return kwargs
+        role = self.context['request'].data.get('role', 'user')
+        if role == 'master':
+            kwargs = {'bio': {'required': True},
+                      'foto': {'required': True},
+                      'phone_number': {'required': True}}
+            return kwargs
+        return super().get_extra_kwargs()
 
 
 class CustomUserSerializer(UserSerializer):
