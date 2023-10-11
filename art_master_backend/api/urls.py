@@ -9,7 +9,7 @@ from .views import (ActivityViewSet,
                     ServiceViewSet,
                     TagViewSet)
 
-app_name = 'services'
+app_name = 'api'
 
 router = routers.DefaultRouter()
 
@@ -17,6 +17,7 @@ router.register('services', ServiceViewSet)
 router.register('activities', ActivityViewSet)
 router.register('tags', TagViewSet)
 router.register('users', CustomUserViewSet)
+# router.register('masters', CustomUserViewSet)
 router.register(
     r'services/(?P<service_id>\d+)/reviews',
     ReviewViewSet,

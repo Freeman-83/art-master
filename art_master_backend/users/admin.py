@@ -11,6 +11,7 @@ class CustomUserAdmin(admin.ModelAdmin):
                     'first_name',
                     'last_name',
                     'role',
+                    'date_joined',
                     'subscribers_count')
     list_display_links = ('username',)
     search_fields = ('username',)

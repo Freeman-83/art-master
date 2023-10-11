@@ -27,6 +27,7 @@ class ActivityAdmin(admin.ModelAdmin):
     list_display_links = ('name',)
     search_fields = ('name',)
     list_filter = ('name',)
+    prepopulated_fields = {'slug': ('name',)}
     empty_value_display = '-пусто-'
 
 

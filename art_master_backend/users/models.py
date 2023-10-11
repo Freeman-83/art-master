@@ -33,6 +33,12 @@ class CustomUser(AbstractUser):
         null=True,
         blank=True
     )
+    phone_number = models.CharField(
+        'Номер телефона',
+        max_length=11,
+        null=True,
+        blank=True
+    )
 
     REQUIRED_FIELDS = ['email', 'password']
 

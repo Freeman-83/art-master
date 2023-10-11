@@ -48,7 +48,7 @@ class ServiceContextSerializer(serializers.ModelSerializer):
 
 
 class RegisterUserSerializer(UserCreateSerializer):
-    """Кастомный сериализатор для регистрации пользователя."""
+    """Кастомный базовый сериализатор для регистрации пользователя."""
 
     class Meta:
         model = CustomUser
@@ -57,8 +57,25 @@ class RegisterUserSerializer(UserCreateSerializer):
                   'email',
                   'first_name',
                   'last_name',
-                  'password'
-                  'role')
+                  'password',
+                  'role',
+                  'bio',
+                  'foto',
+                  'phone_number')
+
+    # def __init__(self, instance=None, data=..., **kwargs):
+    #     if self.Meta.fields['role'] == 'master':
+    #         super().__init__()
+    #     super().__init__(instance, data, **kwargs)
+
+    def get_extra_kwargs(self):
+        role = self.initial_data.get('role')
+        value = {'required': True} if role == 'master' else {'write_only': True}
+        kwargs = {'bio': value,
+                  'foto': value,
+                  'phone_number': value}
+
+        return kwargs
 
 
 class CustomUserSerializer(UserSerializer):
@@ -140,13 +157,14 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 class ServiceSerializer(serializers.ModelSerializer):
     """Сериализатор для создания-обновления Сервисов."""
+    master = CustomUserContextSerializer(
+        default=serializers.CurrentUserDefault()
+    )
     activities = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
     locations = serializers.SerializerMethodField()
     image = Base64ImageField()
-    master = CustomUserContextSerializer(
-        default=serializers.CurrentUserDefault()
-    )
+    created = serializers.DateTimeField(format='%Y-%m-%d')
     is_favorited = serializers.SerializerMethodField()
 
     class Meta:

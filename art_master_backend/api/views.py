@@ -30,7 +30,7 @@ from .utils import create_relation, delete_relation
 class CustomUserViewSet(UserViewSet):
     """Кастомный вьюсет для пользователей.
     (запрос на получение списка пользователей/пользователя
-    настроен на получение профилей со статусом <мастер>)."""
+    настроен на получение профилей только со статусом <мастер>)."""
     serializer_class = CustomUserSerializer
     queryset = CustomUser.objects.all()
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
