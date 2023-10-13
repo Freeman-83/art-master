@@ -20,13 +20,13 @@ class CustomUser(AbstractUser):
         null=False,
         blank=False
     )
-    bio = models.TextField('О себе', null=True, blank=True)
     role = models.CharField(
         'Статус',
         max_length=9,
         choices=ROLE_CHOICES,
         default=USER
     )
+    bio = models.TextField('О себе', null=True, blank=True)
     foto = models.ImageField(
         'Фото профиля',
         upload_to='users/image/',

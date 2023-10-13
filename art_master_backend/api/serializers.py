@@ -61,21 +61,6 @@ class RegisterUserSerializer(UserCreateSerializer):
                   'password',
                   'role',)
 
-    def __init__(self, data, instance=None, **kwargs):
-        role = data.get('role', 'user')
-        if role == 'master':
-            self.Meta.fields += ('bio', 'foto', 'phone_number',)
-        super().__init__(instance, data, **kwargs)
-
-    def get_extra_kwargs(self):
-        role = self.context['request'].data.get('role', 'user')
-        if role == 'master':
-            kwargs = {'bio': {'required': True},
-                      'foto': {'required': True},
-                      'phone_number': {'required': True}}
-            return kwargs
-        return super().get_extra_kwargs()
-
 
 class CustomUserSerializer(UserSerializer):
     """Кастомный сериализатор для пользователей."""
@@ -163,7 +148,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     locations = serializers.SerializerMethodField()
     image = Base64ImageField()
-    created = serializers.DateTimeField(format='%Y-%m-%d')
+    created = serializers.DateTimeField(read_only=True, format='%Y-%m-%d')
     is_favorited = serializers.SerializerMethodField()
 
     class Meta:
@@ -171,9 +156,10 @@ class ServiceSerializer(serializers.ModelSerializer):
         fields = ('id',
                   'name',
                   'description',
-                  'master',
                   'activities',
                   'tags',
+                  'master',
+                  'about_master',
                   'locations',
                   'image',
                   'created',
@@ -199,33 +185,29 @@ class ServiceSerializer(serializers.ModelSerializer):
 
         return data
 
-    def create(self, validated_data):
-        tags_list = validated_data.pop('tags')
-        activity_list = validated_data.pop('activities')
-        location_list = validated_data.pop('locations')
-        service = Service.objects.create(**validated_data)
-
-        service.tags.set(tags_list)
-        service.activities.set(activity_list)
-        service.locations.set(location_list)
-
-        return service
-
     def update(self, instance, validated_data):
-        tags_list = validated_data.pop('tags')
-        activity_list = validated_data.pop('activities')
-        location_list = validated_data.pop('locations')
-        instance = super().update(instance, validated_data)
+
+        for item in validated_data:
+            elem = validated_data.pop(item, instance.item)
+            instance.item.clear()
+            instance.item.set(elem)
+
         instance.save()
 
-        instance.tags.clear()
-        instance.tags.set(tags_list)
+        # tags_list = validated_data.pop('tags', instance)
+        # activity_list = validated_data.pop('activities', instance)
+        # location_list = validated_data.pop('locations', instance)
+        # instance = super().update(instance, validated_data)
+        # instance.save()
 
-        instance.activities.clear()
-        instance.activities.set(activity_list)
+        # instance.tags.clear()
+        # instance.tags.set(tags_list)
 
-        instance.locations.clear()
-        instance.activities.set(location_list)
+        # instance.activities.clear()
+        # instance.activities.set(activity_list)
+
+        # instance.locations.clear()
+        # instance.activities.set(location_list)
 
         return instance
 

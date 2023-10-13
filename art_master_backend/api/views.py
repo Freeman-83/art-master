@@ -36,11 +36,6 @@ class CustomUserViewSet(UserViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     pagination_class = pagination.PageNumberPagination
 
-    def get_queryset(self):
-        if self.action in ['list', 'retrieve']:
-            return CustomUser.objects.filter(role='master')
-        return super().get_queryset()
-
     @action(methods=['post', 'delete'],
             detail=True,
             permission_classes=[permissions.IsAuthenticated, ])

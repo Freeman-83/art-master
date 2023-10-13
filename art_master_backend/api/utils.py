@@ -42,12 +42,12 @@ def delete_relation(request, model, model_relation, pk, field):
     )
 
 
-def get_validated_field(data, model):
+def get_validated_field(values, model):
     "Вспомогательная функция валидации полей."
 
-    if data:
+    if values:
         check_list = []
-        for elem_id in data:
+        for elem_id in values:
             if not model.objects.filter(id=elem_id).exists():
                 raise ValidationError('Несуществующий элемент!')
             if elem_id in check_list:
@@ -57,8 +57,7 @@ def get_validated_field(data, model):
             check_list.append(elem_id)
     else:
         raise ValidationError(
-            'Необходимо указать минимум элемент!'
+            'Необходимо указать минимум один элемент!'
         )
 
-    return data
-
+    return values

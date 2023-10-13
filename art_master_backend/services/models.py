@@ -40,6 +40,9 @@ class Location(models.Model):
     """Модель Локации."""
     address = models.TextField('Адрес')
 
+    def __str__(self):
+        return self.address
+
 
 class Service(models.Model):
     """Модель Сервиса."""
