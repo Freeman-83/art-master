@@ -159,7 +159,6 @@ class ServiceSerializer(serializers.ModelSerializer):
                   'activities',
                   'tags',
                   'master',
-                  'about_master',
                   'locations',
                   'image',
                   'created',
