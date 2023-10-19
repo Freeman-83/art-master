@@ -29,12 +29,22 @@ from .utils import create_relation, delete_relation
 
 class CustomUserViewSet(UserViewSet):
     """Кастомный вьюсет для пользователей.
-    (запрос на получение списка пользователей/пользователя
+    (запрос без прав админа на получение списка пользователей/пользователя
     настроен на получение профилей только со статусом <мастер>)."""
-    serializer_class = CustomUserSerializer
-    queryset = CustomUser.objects.all()
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    # serializer_class = CustomUserSerializer
+    # queryset = CustomUser.objects.all()
     pagination_class = pagination.PageNumberPagination
+
+    def get_queryset(self):
+        if (self.action in ['list', 'retrieve']
+           and not self.request.user.is_staff):
+            return CustomUser.objects.filter(role='master')
+        return super().get_queryset()
+
+    def get_permissions(self):
+        if self.action == 'me':
+            self.permission_classes = [permissions.IsAuthenticated, ]
+        return super().get_permissions()
 
     @action(methods=['post', 'delete'],
             detail=True,

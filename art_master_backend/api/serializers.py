@@ -50,6 +50,7 @@ class ServiceContextSerializer(serializers.ModelSerializer):
 
 class RegisterUserSerializer(UserCreateSerializer):
     """Кастомный базовый сериализатор для регистрации пользователя."""
+    photo = Base64ImageField()
 
     class Meta:
         model = CustomUser
@@ -59,7 +60,24 @@ class RegisterUserSerializer(UserCreateSerializer):
                   'first_name',
                   'last_name',
                   'password',
-                  'role',)
+                  'role',
+                  'bio',
+                  'photo',
+                  'phone_number')
+
+    def get_extra_kwargs(self):
+        conditions = [
+            {'write_only': True},
+            {'required': True}
+        ]
+        value = self.context['request'].data.get('role') == 'master'
+
+        kwargs = {
+            'bio': conditions[value],
+            'photo': conditions[value],
+            'phone_number': conditions[value]
+        }
+        return kwargs
 
 
 class CustomUserSerializer(UserSerializer):
@@ -79,6 +97,23 @@ class CustomUserSerializer(UserSerializer):
                   'services',
                   'subscribers_count',
                   'is_subscribed')
+
+    def validate(self, data):
+        if self.initial_data.get('role') == 'master':
+            bio = self.initial_data.get('bio')
+            photo = self.initial_data.get('photo')
+            phone_number = self.initial_data.get('phone_number')
+
+            if not all([bio, photo, phone_number]):
+                raise ValidationError(
+                    'Для пользователя со статусом МАСТЕР '
+                    'поля О СЕБЕ, ФОТО и НОМЕР ТЕЛЕФОНА обязательны!'
+                )
+            data.update({'bio': bio,
+                         'photo': photo,
+                         'phone_number': phone_number})
+
+        return data
 
     def get_is_subscribed(self, master):
         user = self.context['request'].user
