@@ -4,12 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 
 class CustomUser(AbstractUser):
-    """Кастомная модель пользователя."""
-    ROLE_CHOICES = [
-        ('user', 'user'),
-        ('master', 'master'),
-        # ('admin', 'admin'),
-    ]
+    """Кастомная базовая модель пользователя."""
+
     first_name = models.CharField('Имя', max_length=150)
     last_name = models.CharField('Фамилия', max_length=150)
     email = models.EmailField(
@@ -18,25 +14,6 @@ class CustomUser(AbstractUser):
         unique=True,
         null=False,
         blank=False
-    )
-    role = models.CharField(
-        'Статус',
-        max_length=9,
-        choices=ROLE_CHOICES,
-        default='user'
-    )
-    bio = models.TextField('О себе', null=True, blank=True)
-    photo = models.ImageField(
-        'Фото профиля',
-        upload_to='users/image/',
-        null=True,
-        blank=True
-    )
-    phone_number = models.CharField(
-        'Номер телефона',
-        max_length=11,
-        null=True,
-        blank=True
     )
 
     REQUIRED_FIELDS = ['email', 'password']
@@ -50,11 +27,34 @@ class CustomUser(AbstractUser):
             ),
         ]
 
-    def is_admin(self):
-        return self.is_staff or self.role == "admin"
 
-    def is_master(self):
-        return self.role == "master"
+class Client(CustomUser):
+    "Кастомная модель Клиента."
+
+    class Meta:
+        verbose_name = 'Client'
+        verbose_name_plural = 'Clients'
+
+    def __str__(self):
+        return self.username
+
+
+class Master(CustomUser):
+    "Кастомная модель Мастера."
+    bio = models.TextField('О себе')
+    photo = models.ImageField(
+        'Фото профиля',
+        upload_to='users/image/',
+        null=True,
+        blank=True
+    )
+    phone_number = models.CharField('Номер телефона', max_length=11)
+
+    REQUIRED_FIELDS = ['email', 'password']
+
+    class Meta:
+        verbose_name = 'Master'
+        verbose_name_plural = 'Masters'
 
     def __str__(self):
         return self.username
@@ -62,13 +62,13 @@ class CustomUser(AbstractUser):
 
 class Subscribe(models.Model):
     """Модель подписок."""
-    user = models.ForeignKey(
-        CustomUser,
+    client = models.ForeignKey(
+        Client,
         on_delete=models.CASCADE,
         related_name='subscriptions'
     )
     master = models.ForeignKey(
-        CustomUser,
+        Master,
         on_delete=models.CASCADE,
         related_name='subscribers'
     )
@@ -76,9 +76,9 @@ class Subscribe(models.Model):
     class Meta:
         ordering = ['master']
         constraints = [
-            models.UniqueConstraint(fields=['user', 'master'],
+            models.UniqueConstraint(fields=['client', 'master'],
                                     name='unique_subscribe')
         ]
 
     def __str__(self):
-        return f'{self.user} {self.master}'
+        return f'{self.client} {self.master}'

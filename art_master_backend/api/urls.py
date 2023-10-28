@@ -4,7 +4,9 @@ from rest_framework import routers
 
 from .views import (ActivityViewSet,
                     CommentViewSet,
+                    ClientViewSet,
                     CustomUserViewSet,
+                    MasterViewSet,
                     ReviewViewSet,
                     ServiceViewSet,
                     TagViewSet)
@@ -16,7 +18,8 @@ router = routers.DefaultRouter()
 router.register('services', ServiceViewSet)
 router.register('activities', ActivityViewSet)
 router.register('tags', TagViewSet)
-router.register('users', CustomUserViewSet)
+router.register('users', ClientViewSet)
+router.register('masters', MasterViewSet)
 router.register(
     r'services/(?P<service_id>\d+)/reviews',
     ReviewViewSet,

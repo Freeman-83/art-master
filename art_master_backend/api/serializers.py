@@ -20,7 +20,7 @@ from services.models import (Activity,
                              Service,
                              Tag)
 
-from users.models import CustomUser
+from users.models import Client, CustomUser, Master
 
 
 class Hex2NameColor(serializers.Field):
@@ -48,85 +48,109 @@ class ServiceContextSerializer(serializers.ModelSerializer):
                   'activities')
 
 
-class RegisterUserSerializer(UserCreateSerializer):
+class RegisterSerializer(UserCreateSerializer):
     """Кастомный базовый сериализатор для регистрации пользователя."""
-    photo = Base64ImageField()
+    pass
+
+
+class RegisterMasterSerializer(RegisterSerializer):
+    """Кастомный сериализатор для регистрации Мастера."""
+    # photo = Base64ImageField()
+
 
     class Meta:
-        model = CustomUser
+        model = Master
         fields = ('id',
                   'username',
                   'email',
                   'first_name',
                   'last_name',
                   'password',
-                  'role',
                   'bio',
                   'photo',
                   'phone_number')
 
-    def get_extra_kwargs(self):
-        conditions = [
-            {'write_only': True},
-            {'required': True}
-        ]
-        value = self.context['request'].data.get('role') == 'master'
 
-        kwargs = {
-            'bio': conditions[value],
-            'photo': conditions[value],
-            'phone_number': conditions[value]
-        }
-        return kwargs
-
-
-class CustomUserSerializer(UserSerializer):
-    """Кастомный сериализатор для пользователей."""
-    services = ServiceContextSerializer(many=True, read_only=True)
-    subscribers_count = serializers.SerializerMethodField()
-    is_subscribed = serializers.SerializerMethodField()
+class RegisterClientSerializer(RegisterSerializer):
+    """Кастомный сериализатор для регистрации Клиента."""
 
     class Meta:
-        model = CustomUser
+        model = Client
         fields = ('id',
                   'username',
                   'email',
                   'first_name',
                   'last_name',
-                  'role',
+                  'password',)
+
+
+class CustomUserSerializer(UserSerializer):
+    """Кастомный базовый сериализатор для всех пользователей."""
+    pass
+
+
+class MasterSerialiser(CustomUserSerializer):
+    """Кастомный сериализатор для Мастера."""
+    services = ServiceContextSerializer(many=True, read_only=True)
+    subscribers_count = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Master
+        fields = ('id',
+                  'username',
+                  'email',
+                  'first_name',
+                  'last_name',
                   'services',
                   'subscribers_count',
                   'is_subscribed')
 
-    def validate(self, data):
-        if self.initial_data.get('role') == 'master':
-            bio = self.initial_data.get('bio')
-            photo = self.initial_data.get('photo')
-            phone_number = self.initial_data.get('phone_number')
+    # def validate(self, data):
+    #     if self.initial_data.get('role') == 'master':
+    #         bio = self.initial_data.get('bio')
+    #         photo = self.initial_data.get('photo')
+    #         phone_number = self.initial_data.get('phone_number')
 
-            if not all([bio, photo, phone_number]):
-                raise ValidationError(
-                    'Для пользователя со статусом МАСТЕР '
-                    'поля О СЕБЕ, ФОТО и НОМЕР ТЕЛЕФОНА обязательны!'
-                )
-            data.update({'bio': bio,
-                         'photo': photo,
-                         'phone_number': phone_number})
+    #         if not all([bio, photo, phone_number]):
+    #             raise ValidationError(
+    #                 'Для пользователя со статусом МАСТЕР '
+    #                 'поля О СЕБЕ, ФОТО и НОМЕР ТЕЛЕФОНА обязательны!'
+    #             )
+    #         data.update({'bio': bio,
+    #                      'photo': photo,
+    #                      'phone_number': phone_number})
 
-        return data
+    #     return data
 
     def get_is_subscribed(self, master):
-        user = self.context['request'].user
-        if user.is_anonymous:
+        client = self.context['request'].user
+        if client.is_anonymous:
             return False
-        return user.subscriptions.filter(master=master).exists()
+        return client.subscriptions.filter(master=master).exists()
 
     def get_subscribers_count(self, master):
         return master.subscribers.all().count()
+    
+
+class ClientSerialiser(CustomUserSerializer):
+    """Кастомный сериализатор для Клиента."""
+
+    class Meta:
+        model = Client
+        fields = ('id',
+                  'username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'subscriptions_count')
+        
+    def get_subscriptions_count(self, client):
+        return client.subscriptions.all().count()
 
 
-class CustomUserContextSerializer(UserSerializer):
-    """ Кастомный сериализатор для отображения профиля пользователя
+class MasterContextSerializer(CustomUserSerializer):
+    """ Кастомный сериализатор для отображения профиля Мастера
     в других контекстах."""
     is_subscribed = serializers.SerializerMethodField()
     subscribers_count = serializers.SerializerMethodField()
@@ -176,7 +200,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 class ServiceSerializer(serializers.ModelSerializer):
     """Сериализатор для создания-обновления Сервисов."""
-    master = CustomUserContextSerializer(
+    master = MasterContextSerializer(
         default=serializers.CurrentUserDefault()
     )
     activities = serializers.SerializerMethodField()

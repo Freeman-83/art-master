@@ -3,7 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from colorfield.fields import ColorField
 
-from users.models import CustomUser
+from users.models import Client, CustomUser, Master
 
 
 class Tag(models.Model):
@@ -49,7 +49,7 @@ class Service(models.Model):
     name = models.CharField('Наименование услуги', max_length=256)
     description = models.TextField('Описание', null=False, blank=False)
     master = models.ForeignKey(
-        CustomUser,
+        Master,
         on_delete=models.CASCADE,
         verbose_name='Мастер'
     )
@@ -96,7 +96,7 @@ class Review(models.Model):
         'Оценка', validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
     author = models.ForeignKey(
-        CustomUser,
+        Client,
         verbose_name='Автор',
         on_delete=models.CASCADE,
         related_name='reviews'
@@ -216,23 +216,23 @@ class LocationService(models.Model):
 
 class Favorite(models.Model):
     "Модель избранных Сервисов."
-    user = models.ForeignKey(
-        CustomUser,
+    client = models.ForeignKey(
+        Client,
         on_delete=models.CASCADE,
         related_name='favorite_services'
     )
     service = models.ForeignKey(
         Service,
         on_delete=models.CASCADE,
-        related_name='in_favorite_for_users'
+        related_name='in_favorite_for_clients'
     )
 
     class Meta:
         ordering = ['service']
         constraints = [
-            models.UniqueConstraint(fields=['user', 'service'],
+            models.UniqueConstraint(fields=['client', 'service'],
                                     name='unique_favorite')
         ]
 
     def __str__(self):
-        return f'{self.user} {self.service}'
+        return f'{self.client} {self.service}'

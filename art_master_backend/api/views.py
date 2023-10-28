@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 
+from djoser.conf import settings
 from djoser.views import UserViewSet
 
 from rest_framework import pagination, permissions, viewsets
@@ -13,11 +14,13 @@ from services.models import (Activity,
                              Review,
                              Tag)
 
-from users.models import CustomUser, Subscribe
+from users.models import Client, CustomUser, Master, Subscribe
 
 from .serializers import (ActivitySerializer,
                           CommentSerializer,
                           CustomUserSerializer,
+                          RegisterClientSerializer,
+                          RegisterMasterSerializer,
                           ReviewSerializer,
                           ServiceSerializer,
                           TagSerializer)
@@ -28,17 +31,41 @@ from .utils import create_relation, delete_relation
 
 
 class CustomUserViewSet(UserViewSet):
-    """Кастомный вьюсет для пользователей.
-    (запрос без прав админа на получение списка пользователей/пользователя
-    настроен на получение профилей только со статусом <мастер>)."""
-    # serializer_class = CustomUserSerializer
-    # queryset = CustomUser.objects.all()
+    """Кастомный базовый вьюсет для всех пользователей."""
+    pass
+
+
+class MasterViewSet(CustomUserViewSet):
+    """Кастомный вьюсет для Мастера."""
+    # queryset = Master.objects.all()
     pagination_class = pagination.PageNumberPagination
 
     def get_queryset(self):
         if (self.action in ['list', 'retrieve']
            and not self.request.user.is_staff):
-            return CustomUser.objects.filter(role='master')
+            return Master.objects.all()
+        return super().get_queryset()
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            if settings.USER_CREATE_PASSWORD_RETYPE:
+                return settings.SERIALIZERS.user_create_password_retype
+            return settings.SERIALIZERS.master_create
+        return super().get_serializer_class()
+    
+    def get_permissions(self):
+        if self.action == 'me':
+            self.permission_classes = [permissions.IsAuthenticated, ]
+        return super().get_permissions()
+
+
+class ClientViewSet(CustomUserViewSet):
+    """Кастомный вьюсет для Клиента."""
+
+    def get_queryset(self):
+        if (self.action in ['list', 'retrieve']
+           and not self.request.user.is_staff):
+            return Master.objects.all()
         return super().get_queryset()
 
     def get_permissions(self):
