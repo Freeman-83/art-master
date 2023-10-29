@@ -138,12 +138,10 @@ DJOSER = {
         'current_master': 'api.serializers.MasterSerializer',
         'user': 'api.serializers.ClientSerializer',
         'master': 'api.serializers.MasterSerializer',
-        # 'user_list': 'api.serializers.ClientSerializer',
-        # 'master_list': 'api.serializers.MasterSerializer'
     },
     'PERMISSIONS': {
         'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
-        'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+        'user_list': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
     }
 }
 

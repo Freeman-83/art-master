@@ -32,7 +32,7 @@ from .utils import create_relation, delete_relation
 
 class CustomUserViewSet(UserViewSet):
     """Кастомный базовый вьюсет для всех пользователей."""
-    
+
     def get_permissions(self):
         if self.action == 'me':
             self.permission_classes = [permissions.IsAuthenticated, ]
