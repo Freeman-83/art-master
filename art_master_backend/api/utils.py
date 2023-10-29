@@ -10,11 +10,11 @@ def create_relation(request, model, model_relation, pk, serializer, field):
 
     model_obj = get_object_or_404(model, pk=pk)
     model_relation_obj = model_relation.objects.filter(
-        user=request.user, **{field: model_obj}
+        client=request.user, **{field: model_obj}
     )
 
     if not model_relation_obj.exists():
-        model_relation.objects.create(user=request.user,
+        model_relation.objects.create(client=request.user,
                                       **{field: model_obj})
         serializer = serializer(model_obj, context={'request': request})
         return Response(serializer.data,
@@ -30,7 +30,7 @@ def delete_relation(request, model, model_relation, pk, field):
 
     model_obj = get_object_or_404(model, pk=pk)
     model_relation_obj = model_relation.objects.filter(
-        user=request.user, **{field: model_obj}
+        client=request.user, **{field: model_obj}
     )
 
     if model_relation_obj.exists():

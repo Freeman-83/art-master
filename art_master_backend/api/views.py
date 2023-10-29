@@ -14,13 +14,13 @@ from services.models import (Activity,
                              Review,
                              Tag)
 
-from users.models import Client, CustomUser, Master, Subscribe
+from users.models import CustomUser, Subscribe
 
 from .serializers import (ActivitySerializer,
                           CommentSerializer,
+                          ClientSerializer,
                           CustomUserSerializer,
-                          RegisterClientSerializer,
-                          RegisterMasterSerializer,
+                          MasterContextSerializer,
                           ReviewSerializer,
                           ServiceSerializer,
                           TagSerializer)
@@ -32,26 +32,6 @@ from .utils import create_relation, delete_relation
 
 class CustomUserViewSet(UserViewSet):
     """Кастомный базовый вьюсет для всех пользователей."""
-    pass
-
-
-class MasterViewSet(CustomUserViewSet):
-    """Кастомный вьюсет для Мастера."""
-    # queryset = Master.objects.all()
-    pagination_class = pagination.PageNumberPagination
-
-    def get_queryset(self):
-        if (self.action in ['list', 'retrieve']
-           and not self.request.user.is_staff):
-            return Master.objects.all()
-        return super().get_queryset()
-
-    def get_serializer_class(self):
-        if self.action == "create":
-            if settings.USER_CREATE_PASSWORD_RETYPE:
-                return settings.SERIALIZERS.user_create_password_retype
-            return settings.SERIALIZERS.master_create
-        return super().get_serializer_class()
     
     def get_permissions(self):
         if self.action == 'me':
@@ -59,19 +39,41 @@ class MasterViewSet(CustomUserViewSet):
         return super().get_permissions()
 
 
+class MasterViewSet(CustomUserViewSet):
+    """Кастомный вьюсет для Мастера."""
+    pagination_class = pagination.PageNumberPagination
+
+    def get_queryset(self):
+        if self.action in ['list', 'retrieve']:
+            return CustomUser.objects.filter(role='master')
+        return super().get_queryset()
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            if settings.USER_CREATE_PASSWORD_RETYPE:
+                return settings.SERIALIZERS.user_create_password_retype
+            return settings.SERIALIZERS.master_create
+        if self.action in ['list', 'retrieve']:
+            return settings.SERIALIZERS.master
+        return super().get_serializer_class()
+
+
 class ClientViewSet(CustomUserViewSet):
     """Кастомный вьюсет для Клиента."""
 
     def get_queryset(self):
-        if (self.action in ['list', 'retrieve']
-           and not self.request.user.is_staff):
-            return Master.objects.all()
+        if self.action in ['list', 'retrieve']:
+            return CustomUser.objects.filter(role='client')
         return super().get_queryset()
 
-    def get_permissions(self):
-        if self.action == 'me':
-            self.permission_classes = [permissions.IsAuthenticated, ]
-        return super().get_permissions()
+    def get_serializer_class(self):
+        if self.action == "create":
+            if settings.USER_CREATE_PASSWORD_RETYPE:
+                return settings.SERIALIZERS.user_create_password_retype
+            return settings.SERIALIZERS.user_create
+        if self.action in ['list', 'retrieve']:
+            return settings.SERIALIZERS.user
+        return super().get_serializer_class()
 
     @action(methods=['post', 'delete'],
             detail=True,
@@ -84,7 +86,7 @@ class ClientViewSet(CustomUserViewSet):
                                        CustomUser,
                                        Subscribe,
                                        id,
-                                       CustomUserSerializer,
+                                       MasterContextSerializer,
                                        field='master')
             return delete_relation(request,
                                    CustomUser,
@@ -100,10 +102,10 @@ class ClientViewSet(CustomUserViewSet):
             permission_classes=[permissions.IsAuthenticated, ])
     def subscriptions(self, request):
         subscribers_data = CustomUser.objects.filter(
-            subscribers__user=request.user
+            subscribers__client=request.user
         )
         page = self.paginate_queryset(subscribers_data)
-        serializer = CustomUserSerializer(
+        serializer = MasterContextSerializer(
             page, many=True, context={'request': request}
         )
 

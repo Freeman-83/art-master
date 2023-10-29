@@ -5,7 +5,6 @@ from rest_framework import routers
 from .views import (ActivityViewSet,
                     CommentViewSet,
                     ClientViewSet,
-                    CustomUserViewSet,
                     MasterViewSet,
                     ReviewViewSet,
                     ServiceViewSet,

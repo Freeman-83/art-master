@@ -20,7 +20,7 @@ from services.models import (Activity,
                              Service,
                              Tag)
 
-from users.models import Client, CustomUser, Master
+from users.models import CustomUser
 
 
 class Hex2NameColor(serializers.Field):
@@ -56,16 +56,19 @@ class RegisterSerializer(UserCreateSerializer):
 class RegisterMasterSerializer(RegisterSerializer):
     """Кастомный сериализатор для регистрации Мастера."""
     # photo = Base64ImageField()
-
+    role = serializers.ChoiceField(choices=CustomUser.ROLE, default='master')
+    bio = serializers.CharField(required=True)
+    phone_number = serializers.CharField(required=True)
 
     class Meta:
-        model = Master
+        model = CustomUser
         fields = ('id',
                   'username',
                   'email',
                   'first_name',
                   'last_name',
                   'password',
+                  'role',
                   'bio',
                   'photo',
                   'phone_number')
@@ -75,7 +78,7 @@ class RegisterClientSerializer(RegisterSerializer):
     """Кастомный сериализатор для регистрации Клиента."""
 
     class Meta:
-        model = Client
+        model = CustomUser
         fields = ('id',
                   'username',
                   'email',
@@ -89,19 +92,20 @@ class CustomUserSerializer(UserSerializer):
     pass
 
 
-class MasterSerialiser(CustomUserSerializer):
+class MasterSerializer(CustomUserSerializer):
     """Кастомный сериализатор для Мастера."""
     services = ServiceContextSerializer(many=True, read_only=True)
     subscribers_count = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
-        model = Master
+        model = CustomUser
         fields = ('id',
                   'username',
                   'email',
                   'first_name',
                   'last_name',
+                  'role',
                   'services',
                   'subscribers_count',
                   'is_subscribed')
@@ -133,18 +137,20 @@ class MasterSerialiser(CustomUserSerializer):
         return master.subscribers.all().count()
     
 
-class ClientSerialiser(CustomUserSerializer):
+class ClientSerializer(CustomUserSerializer):
     """Кастомный сериализатор для Клиента."""
+    subscriptions_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = Client
+        model = CustomUser
         fields = ('id',
                   'username',
                   'email',
                   'first_name',
                   'last_name',
+                  'role',
                   'subscriptions_count')
-        
+
     def get_subscriptions_count(self, client):
         return client.subscriptions.all().count()
 

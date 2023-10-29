@@ -3,7 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from colorfield.fields import ColorField
 
-from users.models import Client, CustomUser, Master
+from users.models import CustomUser
 
 
 class Tag(models.Model):
@@ -49,7 +49,7 @@ class Service(models.Model):
     name = models.CharField('Наименование услуги', max_length=256)
     description = models.TextField('Описание', null=False, blank=False)
     master = models.ForeignKey(
-        Master,
+        CustomUser,
         on_delete=models.CASCADE,
         verbose_name='Мастер'
     )
@@ -96,7 +96,7 @@ class Review(models.Model):
         'Оценка', validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
     author = models.ForeignKey(
-        Client,
+        CustomUser,
         verbose_name='Автор',
         on_delete=models.CASCADE,
         related_name='reviews'
@@ -217,7 +217,7 @@ class LocationService(models.Model):
 class Favorite(models.Model):
     "Модель избранных Сервисов."
     client = models.ForeignKey(
-        Client,
+        CustomUser,
         on_delete=models.CASCADE,
         related_name='favorite_services'
     )
