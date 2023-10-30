@@ -8,7 +8,7 @@ class CustomUser(AbstractUser):
 
     ROLE = [
         ('client', 'client'),
-        ('master', 'master') 
+        ('master', 'master')
     ]
 
     first_name = models.CharField('Имя', max_length=150)
@@ -43,6 +43,12 @@ class CustomUser(AbstractUser):
         null=True,
         blank=True
     )
+    social_network_contacts = models.CharField(
+        'Ссылка на аккаунт в социальных сетях',
+        max_length=100,
+        null=True,
+        blank=True
+    )
 
     REQUIRED_FIELDS = ['email', 'password']
 
@@ -54,28 +60,6 @@ class CustomUser(AbstractUser):
                 name='unique_user'
             ),
         ]
-
-
-# class Client(CustomUser):
-#     "Кастомная модель Клиента."
-
-#     class Meta:
-#         verbose_name = 'Client'
-#         verbose_name_plural = 'Clients'
-
-#     def __str__(self):
-#         return self.username
-
-
-# class Master(CustomUser):
-#     "Кастомная модель Мастера."
-
-#     class Meta:
-#         verbose_name = 'Master'
-#         verbose_name_plural = 'Masters'
-
-#     def __str__(self):
-#         return self.username
 
 
 class Subscribe(models.Model):

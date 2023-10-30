@@ -129,7 +129,7 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ServiceViewSet(viewsets.ModelViewSet):
-    "Вьюсет для Сервисов."
+    """Вьюсет для Сервисов."""
     queryset = Service.objects.select_related(
         'master'
     ).prefetch_related(

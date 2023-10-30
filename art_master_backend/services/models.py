@@ -69,6 +69,7 @@ class Service(models.Model):
         verbose_name='Локации'
     )
     image = models.ImageField('Фото', upload_to='services/image/')
+    site_address = models.URLField('Адрес сайта', null=True, blank=True)
     created = models.DateTimeField(
         'Дата размещения информации', auto_now_add=True, db_index=True
     )
@@ -215,7 +216,7 @@ class LocationService(models.Model):
 
 
 class Favorite(models.Model):
-    "Модель избранных Сервисов."
+    """Модель избранных Сервисов."""
     client = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,

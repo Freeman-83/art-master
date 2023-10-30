@@ -57,8 +57,11 @@ class RegisterMasterSerializer(RegisterSerializer):
     """Кастомный сериализатор для регистрации Мастера."""
     # photo = Base64ImageField()
     role = serializers.ChoiceField(choices=CustomUser.ROLE, default='master')
-    bio = serializers.CharField(required=True)
-    phone_number = serializers.CharField(required=True)
+    bio = serializers.CharField(required=True, trim_whitespace=True)
+    phone_number = serializers.CharField(required=True, trim_whitespace=True)
+    social_network_contacts = serializers.CharField(
+        required=True, trim_whitespace=True
+    )
 
     class Meta:
         model = CustomUser
@@ -71,7 +74,8 @@ class RegisterMasterSerializer(RegisterSerializer):
                   'role',
                   'bio',
                   'photo',
-                  'phone_number')
+                  'phone_number',
+                  'social_network_contacts')
 
 
 class RegisterClientSerializer(RegisterSerializer):
@@ -107,25 +111,9 @@ class MasterSerializer(CustomUserSerializer):
                   'last_name',
                   'role',
                   'services',
+                  'social_network_contacts',
                   'subscribers_count',
                   'is_subscribed')
-
-    # def validate(self, data):
-    #     if self.initial_data.get('role') == 'master':
-    #         bio = self.initial_data.get('bio')
-    #         photo = self.initial_data.get('photo')
-    #         phone_number = self.initial_data.get('phone_number')
-
-    #         if not all([bio, photo, phone_number]):
-    #             raise ValidationError(
-    #                 'Для пользователя со статусом МАСТЕР '
-    #                 'поля О СЕБЕ, ФОТО и НОМЕР ТЕЛЕФОНА обязательны!'
-    #             )
-    #         data.update({'bio': bio,
-    #                      'photo': photo,
-    #                      'phone_number': phone_number})
-
-    #     return data
 
     def get_is_subscribed(self, master):
         client = self.context['request'].user
@@ -135,7 +123,7 @@ class MasterSerializer(CustomUserSerializer):
 
     def get_subscribers_count(self, master):
         return master.subscribers.all().count()
-    
+
 
 class ClientSerializer(CustomUserSerializer):
     """Кастомный сериализатор для Клиента."""
@@ -209,10 +197,17 @@ class ServiceSerializer(serializers.ModelSerializer):
     master = MasterContextSerializer(
         default=serializers.CurrentUserDefault()
     )
-    activities = serializers.SerializerMethodField()
-    tags = serializers.SerializerMethodField()
-    locations = serializers.SerializerMethodField()
+    activities = serializers.PrimaryKeyRelatedField(
+        queryset=Activity.objects.all(), many=True
+    )
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(), many=True
+    )
+    locations = serializers.PrimaryKeyRelatedField(
+        queryset=Location.objects.all(), many=True
+    )
     image = Base64ImageField()
+    site_address = serializers.URLField(required=False)
     created = serializers.DateTimeField(read_only=True, format='%Y-%m-%d')
     is_favorited = serializers.SerializerMethodField()
 
@@ -225,6 +220,7 @@ class ServiceSerializer(serializers.ModelSerializer):
                   'tags',
                   'master',
                   'locations',
+                  'site_address',
                   'image',
                   'created',
                   'is_favorited')
@@ -233,56 +229,6 @@ class ServiceSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(queryset=Service.objects.all(),
                                     fields=['master', 'name'])
         ]
-
-    def validate(self, data):
-        tags_list = self.initial_data.get('tags')
-        activities_list = self.initial_data.get('activities')
-        locations_list = self.initial_data.get('locations')
-
-        tags = get_validated_field(tags_list, Tag)
-        activities = get_validated_field(activities_list, Activity)
-        locations = get_validated_field(locations_list, Location)
-
-        data.update({'tags': tags,
-                     'activities': activities,
-                     'locations': locations})
-
-        return data
-
-    def update(self, instance, validated_data):
-
-        for item in validated_data:
-            elem = validated_data.pop(item, instance.item)
-            instance.item.clear()
-            instance.item.set(elem)
-
-        instance.save()
-
-        # tags_list = validated_data.pop('tags', instance)
-        # activity_list = validated_data.pop('activities', instance)
-        # location_list = validated_data.pop('locations', instance)
-        # instance = super().update(instance, validated_data)
-        # instance.save()
-
-        # instance.tags.clear()
-        # instance.tags.set(tags_list)
-
-        # instance.activities.clear()
-        # instance.activities.set(activity_list)
-
-        # instance.locations.clear()
-        # instance.activities.set(location_list)
-
-        return instance
-
-    def get_tags(self, service):
-        return service.tags.values()
-
-    def get_activities(self, service):
-        return service.activities.values()
-
-    def get_locations(self, service):
-        return service.locations.values()
 
     def get_is_favorited(self, service):
         user = self.context['request'].user

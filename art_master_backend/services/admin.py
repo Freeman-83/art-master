@@ -63,7 +63,7 @@ class ServiceAdmin(admin.ModelAdmin):
 
     @admin.display(description='Количество добавлений в избранное')
     def additions_in_favorite_count(self, service):
-        return service.in_favorite_for_users.all().count()
+        return service.in_favorite_for_clients.all().count()
 
 
 @admin.register(Review)
