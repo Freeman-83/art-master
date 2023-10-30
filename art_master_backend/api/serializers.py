@@ -16,6 +16,7 @@ from .utils import get_validated_field
 from services.models import (Activity,
                              Comment,
                              Location,
+                             LocationService,
                              Review,
                              Service,
                              Tag)
@@ -190,6 +191,19 @@ class ActivitySerializer(serializers.ModelSerializer):
                   'name',
                   'description',
                   'slug')
+        
+
+class LocationSerializer(serializers.ModelSerializer):
+    """Сериализатор для Локации."""
+
+    class Meta:
+        model = Location
+        fields = ('country',
+                  'city',
+                  'street',
+                  'house_number',
+                  'building',
+                  'office_number')
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -203,9 +217,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True
     )
-    locations = serializers.PrimaryKeyRelatedField(
-        queryset=Location.objects.all(), many=True
-    )
+    locations = LocationSerializer(many=True)
     image = Base64ImageField()
     site_address = serializers.URLField(required=False)
     created = serializers.DateTimeField(read_only=True, format='%Y-%m-%d')
@@ -230,11 +242,35 @@ class ServiceSerializer(serializers.ModelSerializer):
                                     fields=['master', 'name'])
         ]
 
+    def create(self, validated_data):
+        locations_list = validated_data.pop('locations')
+        activities_list = validated_data.pop('activities')
+        tags_list = validated_data.pop('tags')
+
+        service = Service.objects.create(**validated_data)
+
+        service.activities.set(activities_list)
+        service.tags.set(tags_list)
+
+        for location in locations_list:
+            current_location = Location.objects.create(**location)
+            LocationService.objects.create(
+                location=current_location, service=service
+            )
+
+        return service 
+
     def get_is_favorited(self, service):
         user = self.context['request'].user
         if user.is_anonymous:
             return False
         return user.favorite_services.filter(service=service).exists()
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['activities'] = instance.activities.values()
+        data['tags'] = instance.tags.values()
+        return data
 
 
 class ReviewSerializer(serializers.ModelSerializer):

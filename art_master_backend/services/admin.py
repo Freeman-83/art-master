@@ -42,10 +42,15 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'address')
-    list_display_links = ('address',)
-    search_fields = ('address',)
-    list_filter = ('address',)
+    list_display = ('country',
+                    'city',
+                    'street',
+                    'house_number',
+                    'building',
+                    'office_number')
+    list_display_links = ('city',)
+    search_fields = ('city',)
+    list_filter = ('city',)
     empty_value_display = '-пусто-'
 
 

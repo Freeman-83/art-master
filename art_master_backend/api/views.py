@@ -1,7 +1,11 @@
 from django.shortcuts import get_object_or_404
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 from djoser.conf import settings
 from djoser.views import UserViewSet
+
+from .filters import ActivityFilterSet, ServiceFilterSet
 
 from rest_framework import pagination, permissions, viewsets
 from rest_framework import status
@@ -138,8 +142,8 @@ class ServiceViewSet(viewsets.ModelViewSet):
     serializer_class = ServiceSerializer
     permission_classes = (IsAdminOrMasterOrReadOnly,)
     pagination_class = pagination.PageNumberPagination
-    # filter_backends = (DjangoFilterBackend,)
-    # filterset_class = RecipeFilterSet
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ServiceFilterSet
 
     @action(methods=['post', 'delete'],
             detail=True,

@@ -38,10 +38,24 @@ class Activity(models.Model):
 
 class Location(models.Model):
     """Модель Локации."""
-    address = models.TextField('Адрес')
+    country = models.CharField('Страна', max_length=50)
+    city = models.CharField('Город', max_length=50)
+    street = models.CharField('Улица', max_length=100)
+    house_number = models.IntegerField('Номер дома')
+    building = models.CharField(
+        'Корпус/Строение',
+        max_length=1,
+        null=True,
+        blank=True
+    )
+    office_number = models.IntegerField(
+        'Офис',
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
-        return self.address
+        return f'{self.city}, ул.{self.street}, д.{self.house_number}, оф.{self.office_number}'
 
 
 class Service(models.Model):
