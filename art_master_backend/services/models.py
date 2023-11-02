@@ -55,7 +55,8 @@ class Location(models.Model):
     )
 
     def __str__(self):
-        return f'{self.city}, ул.{self.street}, д.{self.house_number}, оф.{self.office_number}'
+        return (f'{self.city}, ул.{self.street}, '
+                f'д.{self.house_number}, оф.{self.office_number}')
 
 
 class Service(models.Model):
@@ -84,6 +85,18 @@ class Service(models.Model):
     )
     image = models.ImageField('Фото', upload_to='services/image/')
     site_address = models.URLField('Адрес сайта', null=True, blank=True)
+    phone_number = models.CharField(
+        'Номер телефона',
+        max_length=11,
+        null=True,
+        blank=True
+    )
+    social_network_contacts = models.CharField(
+        'Ссылка на аккаунт в социальных сетях',
+        max_length=100,
+        null=True,
+        blank=True
+    )
     created = models.DateTimeField(
         'Дата размещения информации', auto_now_add=True, db_index=True
     )

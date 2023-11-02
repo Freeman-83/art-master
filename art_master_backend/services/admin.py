@@ -21,6 +21,11 @@ class ActivityInService(admin.TabularInline):
     min_num = 1
 
 
+class LocationInService(admin.TabularInline):
+    model = LocationService
+    min_num = 1
+
+
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
@@ -64,7 +69,7 @@ class ServiceAdmin(admin.ModelAdmin):
     list_filter = ('name', 'master')
     empty_value_display = '-пусто-'
 
-    inlines = [ActivityInService, TagInService]
+    inlines = [ActivityInService, TagInService, LocationInService]
 
     @admin.display(description='Количество добавлений в избранное')
     def additions_in_favorite_count(self, service):

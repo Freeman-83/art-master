@@ -57,12 +57,6 @@ class RegisterSerializer(UserCreateSerializer):
 class RegisterMasterSerializer(RegisterSerializer):
     """Кастомный сериализатор для регистрации Мастера."""
     # photo = Base64ImageField()
-    role = serializers.ChoiceField(choices=CustomUser.ROLE, default='master')
-    bio = serializers.CharField(required=True, trim_whitespace=True)
-    phone_number = serializers.CharField(required=True, trim_whitespace=True)
-    social_network_contacts = serializers.CharField(
-        required=True, trim_whitespace=True
-    )
 
     class Meta:
         model = CustomUser
@@ -72,11 +66,8 @@ class RegisterMasterSerializer(RegisterSerializer):
                   'first_name',
                   'last_name',
                   'password',
-                  'role',
-                  'bio',
                   'photo',
-                  'phone_number',
-                  'social_network_contacts')
+                  'is_master')
 
 
 class RegisterClientSerializer(RegisterSerializer):
@@ -89,7 +80,8 @@ class RegisterClientSerializer(RegisterSerializer):
                   'email',
                   'first_name',
                   'last_name',
-                  'password',)
+                  'password',
+                  'photo')
 
 
 class CustomUserSerializer(UserSerializer):
@@ -110,9 +102,7 @@ class MasterSerializer(CustomUserSerializer):
                   'email',
                   'first_name',
                   'last_name',
-                  'role',
                   'services',
-                  'social_network_contacts',
                   'subscribers_count',
                   'is_subscribed')
 
@@ -137,7 +127,6 @@ class ClientSerializer(CustomUserSerializer):
                   'email',
                   'first_name',
                   'last_name',
-                  'role',
                   'subscriptions_count')
 
     def get_subscriptions_count(self, client):
@@ -191,7 +180,7 @@ class ActivitySerializer(serializers.ModelSerializer):
                   'name',
                   'description',
                   'slug')
-        
+
 
 class LocationSerializer(serializers.ModelSerializer):
     """Сериализатор для Локации."""
@@ -207,7 +196,7 @@ class LocationSerializer(serializers.ModelSerializer):
 
 
 class ServiceSerializer(serializers.ModelSerializer):
-    """Сериализатор для создания-обновления Сервисов."""
+    """Сериализатор для Сервиса."""
     master = MasterContextSerializer(
         default=serializers.CurrentUserDefault()
     )
@@ -233,6 +222,8 @@ class ServiceSerializer(serializers.ModelSerializer):
                   'master',
                   'locations',
                   'site_address',
+                  'phone_number',
+                  'social_network_contacts',
                   'image',
                   'created',
                   'is_favorited')
@@ -258,7 +249,7 @@ class ServiceSerializer(serializers.ModelSerializer):
                 location=current_location, service=service
             )
 
-        return service 
+        return service
 
     def get_is_favorited(self, service):
         user = self.context['request'].user

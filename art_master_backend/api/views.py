@@ -14,6 +14,7 @@ from rest_framework.response import Response
 
 from services.models import (Activity,
                              Favorite,
+                             Location,
                              Service,
                              Review,
                              Tag)
@@ -22,11 +23,11 @@ from users.models import CustomUser, Subscribe
 
 from .serializers import (ActivitySerializer,
                           CommentSerializer,
-                          ClientSerializer,
-                          CustomUserSerializer,
+                          LocationSerializer,
                           MasterContextSerializer,
                           ReviewSerializer,
                           ServiceSerializer,
+                          ServiceContextSerializer,
                           TagSerializer)
 
 from .permissions import IsAdminOrMasterOrReadOnly, IsAdminOrAuthorOrReadOnly
@@ -49,7 +50,7 @@ class MasterViewSet(CustomUserViewSet):
 
     def get_queryset(self):
         if self.action in ['list', 'retrieve']:
-            return CustomUser.objects.filter(role='master')
+            return CustomUser.objects.filter(is_master=True)
         return super().get_queryset()
 
     def get_serializer_class(self):
@@ -61,13 +62,16 @@ class MasterViewSet(CustomUserViewSet):
             return settings.SERIALIZERS.master
         return super().get_serializer_class()
 
+    def perform_create(self, serializer, *args, **kwargs):
+        serializer.save(is_master=True)
+
 
 class ClientViewSet(CustomUserViewSet):
     """Кастомный вьюсет для Клиента."""
 
     def get_queryset(self):
         if self.action in ['list', 'retrieve']:
-            return CustomUser.objects.filter(role='client')
+            return CustomUser.objects.filter(is_master=False)
         return super().get_queryset()
 
     def get_serializer_class(self):
@@ -83,7 +87,7 @@ class ClientViewSet(CustomUserViewSet):
             detail=True,
             permission_classes=[permissions.IsAuthenticated, ])
     def subscribe(self, request, id):
-        master = get_object_or_404(CustomUser, pk=id, role='master')
+        master = get_object_or_404(CustomUser, pk=id, is_master=True)
         if request.user != master:
             if request.method == 'POST':
                 return create_relation(request,
@@ -128,8 +132,13 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
     pagination_class = None
-    # filter_backends = (DjangoFilterBackend,)
-    # filterset_class = IngredientFilterSet
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ActivityFilterSet
+
+
+class LocationViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer
 
 
 class ServiceViewSet(viewsets.ModelViewSet):
@@ -154,7 +163,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
                                    Service,
                                    Favorite,
                                    pk,
-                                   ServiceSerializer,
+                                   ServiceContextSerializer,
                                    field='service')
         return delete_relation(request,
                                Service,

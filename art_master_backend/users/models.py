@@ -5,12 +5,6 @@ from django.utils.translation import gettext_lazy as _
 
 class CustomUser(AbstractUser):
     """Кастомная базовая модель пользователя."""
-
-    ROLE = [
-        ('client', 'client'),
-        ('master', 'master')
-    ]
-
     first_name = models.CharField('Имя', max_length=150)
     last_name = models.CharField('Фамилия', max_length=150)
     email = models.EmailField(
@@ -20,35 +14,13 @@ class CustomUser(AbstractUser):
         null=False,
         blank=False
     )
-    role = models.CharField(
-        'Статус',
-        max_length=9,
-        choices=ROLE,
-        default='client'
-    )
-    bio = models.TextField(
-        'О себе',
-        null=True,
-        blank=True
-    )
     photo = models.ImageField(
         'Фото профиля',
         upload_to='users/image/',
         null=True,
         blank=True
     )
-    phone_number = models.CharField(
-        'Номер телефона',
-        max_length=11,
-        null=True,
-        blank=True
-    )
-    social_network_contacts = models.CharField(
-        'Ссылка на аккаунт в социальных сетях',
-        max_length=100,
-        null=True,
-        blank=True
-    )
+    is_master = models.BooleanField('Статус Мастера', default=False)
 
     REQUIRED_FIELDS = ['email', 'password']
 
