@@ -84,7 +84,11 @@ class Service(models.Model):
         verbose_name='Локации'
     )
     image = models.ImageField('Фото', upload_to='services/image/')
-    site_address = models.URLField('Адрес сайта', null=True, blank=True)
+    site_address = models.URLField(
+        'Адрес сайта',
+        null=True,
+        blank=True
+    )
     phone_number = models.CharField(
         'Номер телефона',
         max_length=11,

@@ -36,7 +36,7 @@ from .utils import create_relation, delete_relation
 
 
 class CustomUserViewSet(UserViewSet):
-    """Кастомный базовый вьюсет для всех пользователей."""
+    """Кастомный базовый вьюсет всех пользователей."""
 
     def get_permissions(self):
         if self.action == 'me':
@@ -45,7 +45,7 @@ class CustomUserViewSet(UserViewSet):
 
 
 class MasterViewSet(CustomUserViewSet):
-    """Кастомный вьюсет для Мастера."""
+    """Кастомный вьюсет Мастера."""
     pagination_class = pagination.PageNumberPagination
 
     def get_queryset(self):
@@ -62,12 +62,12 @@ class MasterViewSet(CustomUserViewSet):
             return settings.SERIALIZERS.master
         return super().get_serializer_class()
 
-    def perform_create(self, serializer, *args, **kwargs):
+    def perform_create(self, serializer):
         serializer.save(is_master=True)
 
 
 class ClientViewSet(CustomUserViewSet):
-    """Кастомный вьюсет для Клиента."""
+    """Кастомный вьюсет Клиента."""
 
     def get_queryset(self):
         if self.action in ['list', 'retrieve']:
@@ -121,14 +121,14 @@ class ClientViewSet(CustomUserViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    """Вьюсет для Тегов."""
+    """Вьюсет Тегов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
 
 
 class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
-    """Вьюсет для Активностей."""
+    """Вьюсет Активностей."""
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
     pagination_class = None
@@ -142,7 +142,7 @@ class LocationViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ServiceViewSet(viewsets.ModelViewSet):
-    """Вьюсет для Сервисов."""
+    """Вьюсет Сервисов."""
     queryset = Service.objects.select_related(
         'master'
     ).prefetch_related(
@@ -173,7 +173,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    """Вьюсет для отзывов к Сервисам."""
+    """Вьюсет Отзывов к Сервисам."""
     serializer_class = ReviewSerializer
     permission_classes = (IsAdminOrAuthorOrReadOnly,)
 
@@ -187,7 +187,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    """Вьюсет для комментариев к отзывам."""
+    """Вьюсет Комментариев к Отзывам."""
     serializer_class = CommentSerializer
     permission_classes = (IsAdminOrAuthorOrReadOnly,)
 

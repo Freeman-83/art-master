@@ -39,7 +39,7 @@ class Hex2NameColor(serializers.Field):
 
 
 class ServiceContextSerializer(serializers.ModelSerializer):
-    "Сериализатор для отображения профиля рецепта в других контекстах."
+    """Сериализатор отображения профиля рецепта в других контекстах."""
     activities = serializers.StringRelatedField(many=True)
 
     class Meta:
@@ -50,12 +50,12 @@ class ServiceContextSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(UserCreateSerializer):
-    """Кастомный базовый сериализатор для регистрации пользователя."""
+    """Кастомный базовый сериализатор регистрации пользователя."""
     pass
 
 
 class RegisterMasterSerializer(RegisterSerializer):
-    """Кастомный сериализатор для регистрации Мастера."""
+    """Кастомный сериализатор регистрации Мастера."""
     # photo = Base64ImageField()
 
     class Meta:
@@ -71,7 +71,7 @@ class RegisterMasterSerializer(RegisterSerializer):
 
 
 class RegisterClientSerializer(RegisterSerializer):
-    """Кастомный сериализатор для регистрации Клиента."""
+    """Кастомный сериализатор регистрации Клиента."""
 
     class Meta:
         model = CustomUser
@@ -85,12 +85,12 @@ class RegisterClientSerializer(RegisterSerializer):
 
 
 class CustomUserSerializer(UserSerializer):
-    """Кастомный базовый сериализатор для всех пользователей."""
+    """Кастомный базовый сериализатор всех пользователей."""
     pass
 
 
 class MasterSerializer(CustomUserSerializer):
-    """Кастомный сериализатор для Мастера."""
+    """Кастомный сериализатор Мастера."""
     services = ServiceContextSerializer(many=True, read_only=True)
     subscribers_count = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()
@@ -117,7 +117,7 @@ class MasterSerializer(CustomUserSerializer):
 
 
 class ClientSerializer(CustomUserSerializer):
-    """Кастомный сериализатор для Клиента."""
+    """Кастомный сериализатор Клиента."""
     subscriptions_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -134,7 +134,7 @@ class ClientSerializer(CustomUserSerializer):
 
 
 class MasterContextSerializer(CustomUserSerializer):
-    """ Кастомный сериализатор для отображения профиля Мастера
+    """Кастомный сериализатор отображения профиля Мастера
     в других контекстах."""
     is_subscribed = serializers.SerializerMethodField()
     subscribers_count = serializers.SerializerMethodField()
@@ -160,7 +160,7 @@ class MasterContextSerializer(CustomUserSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    """Сериализатор для Тегов."""
+    """Сериализатор Тегов."""
     color = Hex2NameColor()
 
     class Meta:
@@ -172,7 +172,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class ActivitySerializer(serializers.ModelSerializer):
-    """Сериализатор для Активностей."""
+    """Сериализатор Активностей."""
 
     class Meta:
         model = Activity
@@ -183,7 +183,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 
 class LocationSerializer(serializers.ModelSerializer):
-    """Сериализатор для Локации."""
+    """Сериализатор Локации."""
 
     class Meta:
         model = Location
@@ -196,7 +196,7 @@ class LocationSerializer(serializers.ModelSerializer):
 
 
 class ServiceSerializer(serializers.ModelSerializer):
-    """Сериализатор для Сервиса."""
+    """Сериализатор Сервиса."""
     master = MasterContextSerializer(
         default=serializers.CurrentUserDefault()
     )
@@ -208,7 +208,6 @@ class ServiceSerializer(serializers.ModelSerializer):
     )
     locations = LocationSerializer(many=True)
     image = Base64ImageField()
-    site_address = serializers.URLField(required=False)
     created = serializers.DateTimeField(read_only=True, format='%Y-%m-%d')
     is_favorited = serializers.SerializerMethodField()
 
@@ -232,6 +231,17 @@ class ServiceSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(queryset=Service.objects.all(),
                                     fields=['master', 'name'])
         ]
+
+    # def validate(self, data):
+    #     activities_list = self.initial_data('activities')
+    #     tags_list = self.initial_data('tags')
+
+    #     activities = get_validated_field(activities_list, Activity)
+    #     tags = get_validated_field(tags_list, Tag)
+
+    #     data.update({'activities': activities,
+    #                  'tags': tags})
+    #     return data
 
     def create(self, validated_data):
         locations_list = validated_data.pop('locations')
@@ -265,7 +275,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    """Сериализатор для отзывов к Сервисам."""
+    """Сериализатор Отзывов к Сервисам."""
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
@@ -289,7 +299,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    """Сериализатор для комментариев к отзывам."""
+    """Сериализатор Комментариев к Отзывам."""
     review = ReviewSerializer(read_only=True)
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),

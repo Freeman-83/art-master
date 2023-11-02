@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 
 def create_relation(request, model, model_relation, pk, serializer, field):
-    "Функция создания связи User -> Model."
+    """Функция создания связи User -> Model."""
 
     model_obj = get_object_or_404(model, pk=pk)
     model_relation_obj = model_relation.objects.filter(
@@ -26,7 +26,7 @@ def create_relation(request, model, model_relation, pk, serializer, field):
 
 
 def delete_relation(request, model, model_relation, pk, field):
-    "Функция удаления связи User -> Model."
+    """Функция удаления связи User -> Model."""
 
     model_obj = get_object_or_404(model, pk=pk)
     model_relation_obj = model_relation.objects.filter(
@@ -43,7 +43,7 @@ def delete_relation(request, model, model_relation, pk, field):
 
 
 def get_validated_field(values, model):
-    "Вспомогательная функция валидации полей."
+    """Вспомогательная функция валидации полей."""
 
     if values:
         check_list = []
