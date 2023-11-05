@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
@@ -37,12 +38,12 @@ class CustomUser(AbstractUser):
 class Subscribe(models.Model):
     """Модель подписок."""
     client = models.ForeignKey(
-        CustomUser,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='subscriptions'
     )
     master = models.ForeignKey(
-        CustomUser,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='subscribers'
     )

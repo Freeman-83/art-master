@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -64,7 +65,7 @@ class Service(models.Model):
     name = models.CharField('Наименование услуги', max_length=256)
     description = models.TextField('Описание', null=False, blank=False)
     master = models.ForeignKey(
-        CustomUser,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name='Мастер'
     )
@@ -128,7 +129,7 @@ class Review(models.Model):
         'Оценка', validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
     author = models.ForeignKey(
-        CustomUser,
+        settings.AUTH_USER_MODEL,
         verbose_name='Автор',
         on_delete=models.CASCADE,
         related_name='reviews'
@@ -159,7 +160,7 @@ class Comment(models.Model):
     )
     text = models.TextField('Текст')
     author = models.ForeignKey(
-        CustomUser,
+        settings.AUTH_USER_MODEL,
         verbose_name='Автор',
         on_delete=models.CASCADE,
         related_name='comments'
@@ -249,7 +250,7 @@ class LocationService(models.Model):
 class Favorite(models.Model):
     """Модель избранных Сервисов."""
     client = models.ForeignKey(
-        CustomUser,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='favorite_services'
     )
