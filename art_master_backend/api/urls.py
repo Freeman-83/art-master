@@ -17,8 +17,8 @@ router = routers.DefaultRouter()
 router.register('services', ServiceViewSet)
 router.register('activities', ActivityViewSet)
 router.register('tags', TagViewSet)
-router.register('users', ClientViewSet)
-router.register('masters', MasterViewSet)
+router.register('users', ClientViewSet, basename='users')
+router.register('masters', MasterViewSet, basename='masters')
 router.register(
     r'services/(?P<service_id>\d+)/reviews',
     ReviewViewSet,

@@ -49,9 +49,7 @@ class MasterViewSet(CustomUserViewSet):
     pagination_class = pagination.PageNumberPagination
 
     def get_queryset(self):
-        if self.action in ['list', 'retrieve']:
-            return CustomUser.objects.filter(is_master=True)
-        return super().get_queryset()
+        return CustomUser.objects.filter(is_master=True)
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -70,9 +68,7 @@ class ClientViewSet(CustomUserViewSet):
     """Кастомный вьюсет Клиента."""
 
     def get_queryset(self):
-        if self.action in ['list', 'retrieve']:
-            return CustomUser.objects.filter(is_master=False)
-        return super().get_queryset()
+        return CustomUser.objects.filter(is_master=False)
 
     def get_serializer_class(self):
         if self.action == "create":
