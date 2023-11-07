@@ -1,4 +1,3 @@
-# from rest_framework.fields import empty
 import webcolors
 
 from django.shortcuts import get_object_or_404
@@ -10,8 +9,6 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
 from djoser.serializers import UserSerializer, UserCreateSerializer
-
-from .utils import get_validated_field
 
 from services.models import (Activity,
                              Comment,
@@ -66,6 +63,7 @@ class RegisterMasterSerializer(RegisterSerializer):
                   'first_name',
                   'last_name',
                   'password',
+                  'phone_number',
                   'photo',
                   'is_master')
 
@@ -81,6 +79,7 @@ class RegisterClientSerializer(RegisterSerializer):
                   'first_name',
                   'last_name',
                   'password',
+                  'phone_number',
                   'photo')
 
 

@@ -4,8 +4,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from colorfield.fields import ColorField
 
-from users.models import CustomUser
-
 
 class Tag(models.Model):
     """Модель Тега."""
