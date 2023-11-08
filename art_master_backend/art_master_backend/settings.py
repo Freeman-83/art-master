@@ -139,6 +139,7 @@ DJOSER = {
         'current_master': 'api.serializers.MasterSerializer',
         'user': 'api.serializers.ClientSerializer',
         'master': 'api.serializers.MasterSerializer',
+        'token_create': 'api.serializers.CustomTokenCreateSerializer',
     },
     'PERMISSIONS': {
         'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],

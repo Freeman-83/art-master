@@ -40,14 +40,14 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
-    PHONE_FIELD = 'phone_number'
+    ALT_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['username', 'password']
 
     class Meta:
         ordering = ['username']
         constraints = [
             models.UniqueConstraint(
-                fields=['username', 'email'],
+                fields=['username', 'email', 'phone_number'],
                 name='unique_user'
             ),
         ]
