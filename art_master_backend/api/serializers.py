@@ -51,7 +51,7 @@ class ServiceContextSerializer(serializers.ModelSerializer):
                   'activities')
 
 
-class RegisterSerializer(UserCreateSerializer):
+class RegisterUserSerializer(UserCreateSerializer):
     """Кастомный базовый сериализатор регистрации пользователя."""
 
     class Meta:
@@ -79,15 +79,15 @@ class RegisterSerializer(UserCreateSerializer):
         return data
 
 
-class RegisterMasterSerializer(RegisterSerializer):
+class RegisterMasterSerializer(RegisterUserSerializer):
     """Кастомный сериализатор регистрации Мастера."""
 
     class Meta:
         model = CustomUser
-        fields = RegisterSerializer.Meta.fields + ('is_master',)
+        fields = RegisterUserSerializer.Meta.fields + ('is_master',)
 
 
-class RegisterClientSerializer(RegisterSerializer):
+class RegisterClientSerializer(RegisterUserSerializer):
     """Кастомный сериализатор регистрации Клиента."""
     pass
 
