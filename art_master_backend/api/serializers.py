@@ -1,3 +1,4 @@
+import re
 import webcolors
 
 from django.shortcuts import get_object_or_404
@@ -48,39 +49,43 @@ class ServiceContextSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(UserCreateSerializer):
     """Кастомный базовый сериализатор регистрации пользователя."""
-    pass
+
+    class Meta:
+        model = CustomUser
+        fields = ('id',
+                  'username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'password',
+                  'phone_number',
+                  'photo',)
+
+    def validate_username(self, data):
+        username = data
+        error_symbols_list = []
+
+        for symbol in username:
+            if not re.search(r'^[\w.@+-]+\Z', symbol):
+                error_symbols_list.append(symbol)
+        if error_symbols_list:
+            raise serializers.ValidationError(
+                f'Символы {"".join(error_symbols_list)} недопустимы'
+            )
+        return data
 
 
 class RegisterMasterSerializer(RegisterSerializer):
     """Кастомный сериализатор регистрации Мастера."""
-    # photo = Base64ImageField()
 
     class Meta:
         model = CustomUser
-        fields = ('id',
-                  'username',
-                  'email',
-                  'first_name',
-                  'last_name',
-                  'password',
-                  'phone_number',
-                  'photo',
-                  'is_master')
+        fields = RegisterSerializer.Meta.fields + ('is_master',)
 
 
 class RegisterClientSerializer(RegisterSerializer):
     """Кастомный сериализатор регистрации Клиента."""
-
-    class Meta:
-        model = CustomUser
-        fields = ('id',
-                  'username',
-                  'email',
-                  'first_name',
-                  'last_name',
-                  'password',
-                  'phone_number',
-                  'photo')
+    pass
 
 
 class CustomUserSerializer(UserSerializer):
