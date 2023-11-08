@@ -61,8 +61,8 @@ class RegisterSerializer(UserCreateSerializer):
                   'email',
                   'first_name',
                   'last_name',
-                  'password',
                   'phone_number',
+                  'password',
                   'photo',)
 
     def validate_username(self, data):
@@ -96,7 +96,7 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
     """Кастомный сериализатор получения токена по email/номеру телефона"""
 
     password = serializers.CharField(
-        required=False, style={"input_type": "password"}
+        required=False, style={'input_type': 'password'}
     )
     main_field = CustomUser.USERNAME_FIELD
     alt_field = CustomUser.ALT_FIELD
@@ -111,7 +111,7 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
             self.fields[self.alt_field] = serializers.CharField(required=False)
 
     def validate(self, data):
-        password = data.get("password")
+        password = data.get('password')
 
         params = {}
         if self.context['request'].data.get(self.main_field):
@@ -119,7 +119,7 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
         else:
             params = {self.alt_field: data.get(self.alt_field)}
         self.user = authenticate(
-            request=self.context.get("request"), **params, password=password
+            request=self.context.get('request'), **params, password=password
         )
 
         if not self.user:

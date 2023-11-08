@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 
+from phonenumber_field.modelfields import PhoneNumberField
+
 
 class CustomUser(AbstractUser):
     """Кастомная модель пользователя."""
@@ -16,13 +18,13 @@ class CustomUser(AbstractUser):
     )
     first_name = models.CharField('Имя', max_length=150)
     last_name = models.CharField('Фамилия', max_length=150)
+    phone_number = PhoneNumberField('Номер телефона')
     photo = models.ImageField(
         'Фото профиля',
         upload_to='users/image/',
         null=True,
         blank=True
     )
-    phone_number = models.CharField('Номер телефона', max_length=11)
     is_master = models.BooleanField('Статус Мастера', default=False)
 
     USERNAME_FIELD = 'email'

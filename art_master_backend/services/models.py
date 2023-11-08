@@ -4,6 +4,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 from colorfield.fields import ColorField
 
+from phonenumber_field.modelfields import PhoneNumberField
+
 
 class Tag(models.Model):
     """Модель Тега."""
@@ -88,12 +90,7 @@ class Service(models.Model):
         null=True,
         blank=True
     )
-    phone_number = models.CharField(
-        'Номер телефона',
-        max_length=11,
-        null=True,
-        blank=True
-    )
+    phone_number = PhoneNumberField('Контактный номер телефона')
     social_network_contacts = models.CharField(
         'Ссылка на аккаунт в социальных сетях',
         max_length=100,

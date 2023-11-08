@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_filters',
     'djoser',
     'colorfield',
+    'phonenumber_field',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
     'services.apps.ServicesConfig',
@@ -159,6 +160,8 @@ TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 
 USE_TZ = True
+
+PHONENUMBER_DEFAULT_REGION = 'RU'
 
 
 # Static files (CSS, JavaScript, Images)
