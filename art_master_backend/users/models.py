@@ -3,18 +3,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 
-from django.contrib.auth.models import UserManager
-
-from django.db.models import Q
-
-
-class CustomUserManager(UserManager):
-
-    def get_by_natural_key(self, username):
-        return self.get(
-            Q(**{self.model.USERNAME_FIELD: username}) or Q(**{self.model.PHONE_FIELD: username})
-        )
-
 
 class CustomUser(AbstractUser):
     """Кастомная модель пользователя."""
@@ -36,8 +24,6 @@ class CustomUser(AbstractUser):
     )
     phone_number = models.CharField('Номер телефона', max_length=11)
     is_master = models.BooleanField('Статус Мастера', default=False)
-
-    objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
     ALT_FIELD = 'phone_number'

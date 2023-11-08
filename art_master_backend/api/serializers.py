@@ -5,8 +5,6 @@ from django.contrib.auth import authenticate
 
 from django.shortcuts import get_object_or_404
 
-from djoser.conf import settings
-
 from drf_extra_fields.fields import Base64ImageField
 
 from rest_framework import serializers
@@ -103,11 +101,6 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
     main_field = CustomUser.USERNAME_FIELD
     alt_field = CustomUser.ALT_FIELD
 
-    default_error_messages = {
-        "invalid_credentials": settings.CONSTANTS.messages.INVALID_CREDENTIALS_ERROR,
-        "inactive_account": settings.CONSTANTS.messages.INACTIVE_ACCOUNT_ERROR,
-    }
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = None
@@ -121,7 +114,6 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
         password = data.get("password")
 
         params = {}
-
         if self.context['request'].data.get(self.main_field):
             params = {self.main_field: data.get(self.main_field)}
         else:
@@ -129,13 +121,18 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
         self.user = authenticate(
             request=self.context.get("request"), **params, password=password
         )
+
         if not self.user:
             self.user = CustomUser.objects.filter(**params).first()
             if self.user and not self.user.check_password(password):
-                self.fail("invalid_credentials")
+                raise serializers.ValidationError(
+                    'Некорректные данные пользователя!'
+                )
         if self.user and self.user.is_active:
             return data
-        self.fail("invalid_credentials")
+        raise serializers.ValidationError(
+            'Некорректные данные пользователя!'
+        )
 
 
 class CustomUserSerializer(UserSerializer):
