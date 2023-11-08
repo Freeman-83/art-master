@@ -18,7 +18,7 @@ class CustomUser(AbstractUser):
     )
     first_name = models.CharField('Имя', max_length=150)
     last_name = models.CharField('Фамилия', max_length=150)
-    phone_number = PhoneNumberField('Номер телефона')
+    phone_number = PhoneNumberField('Номер телефона', unique=True)
     photo = models.ImageField(
         'Фото профиля',
         upload_to='users/image/',

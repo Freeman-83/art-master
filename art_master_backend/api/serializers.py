@@ -2,7 +2,6 @@ import re
 import webcolors
 
 from django.contrib.auth import authenticate
-
 from django.shortcuts import get_object_or_404
 
 from drf_extra_fields.fields import Base64ImageField
@@ -260,6 +259,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     locations = LocationSerializer(many=True)
     image = Base64ImageField()
     created = serializers.DateTimeField(read_only=True, format='%Y-%m-%d')
+    rating = serializers.IntegerField(read_only=True)
     is_favorited = serializers.SerializerMethodField()
 
     class Meta:
@@ -276,6 +276,7 @@ class ServiceSerializer(serializers.ModelSerializer):
                   'social_network_contacts',
                   'image',
                   'created',
+                  'rating',
                   'is_favorited')
 
         validators = [

@@ -143,8 +143,9 @@ DJOSER = {
         'token_create': 'api.serializers.CustomTokenCreateSerializer',
     },
     'PERMISSIONS': {
-        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
-        'user_list': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
+        'user_list': ['rest_framework.permissions.IsAdminUser'],
+        'master_list': ['rest_framework.permissions.AllowAny'],
+        'master': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
     }
 }
 

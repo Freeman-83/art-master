@@ -1,16 +1,16 @@
 from django.shortcuts import get_object_or_404
-
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Avg
 
 from djoser.conf import settings
 from djoser.views import UserViewSet
-
-from .filters import ActivityFilterSet, ServiceFilterSet
 
 from rest_framework import pagination, permissions, viewsets
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+from .filters import ActivityFilterSet, ServiceFilterSet
 
 from services.models import (Activity,
                              Favorite,
@@ -46,7 +46,14 @@ class CustomUserViewSet(UserViewSet):
 
 class MasterViewSet(CustomUserViewSet):
     """Кастомный вьюсет Мастера."""
-    pagination_class = pagination.PageNumberPagination
+    # pagination_class = pagination.PageNumberPagination
+
+    def get_permissions(self):
+        if self.action == 'list':
+            self.permission_classes = settings.PERMISSIONS.master_list
+        elif self.action == 'retrieve':
+            self.permission_classes = settings.PERMISSIONS.master
+        return super().get_permissions()
 
     def get_queryset(self):
         return CustomUser.objects.filter(is_master=True)
@@ -143,10 +150,12 @@ class ServiceViewSet(viewsets.ModelViewSet):
         'master'
     ).prefetch_related(
         'tags', 'activities', 'locations'
+    ).annotate(
+        rating=Avg('reviews__score')
     ).all()
     serializer_class = ServiceSerializer
     permission_classes = (IsAdminOrMasterOrReadOnly,)
-    pagination_class = pagination.PageNumberPagination
+    # pagination_class = pagination.PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ServiceFilterSet
 

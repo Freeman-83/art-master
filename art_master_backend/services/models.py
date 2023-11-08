@@ -85,6 +85,7 @@ class Service(models.Model):
         verbose_name='Локации'
     )
     image = models.ImageField('Фото', upload_to='services/image/')
+    about_master = models.TextField('О себе', null=True, blank=True)
     site_address = models.URLField(
         'Адрес сайта',
         null=True,
@@ -102,7 +103,7 @@ class Service(models.Model):
     )
 
     class Meta:
-        ordering = ['name']
+        ordering = ['-created']
         verbose_name = 'Service'
         verbose_name_plural = 'Services'
         default_related_name = 'services'
@@ -134,7 +135,7 @@ class Review(models.Model):
     )
 
     class Meta:
-        ordering = ['pub_date']
+        ordering = ['-pub_date']
         verbose_name = 'Review'
         verbose_name_plural = 'Reviews'
         constraints = [
@@ -165,7 +166,7 @@ class Comment(models.Model):
     )
 
     class Meta:
-        ordering = ['pub_date']
+        ordering = ['-pub_date']
         verbose_name = 'Comment'
         verbose_name_plural = 'Comments'
 
