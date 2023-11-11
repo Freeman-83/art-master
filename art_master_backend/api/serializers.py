@@ -184,8 +184,7 @@ class ClientSerializer(CustomUserSerializer):
 
 
 class MasterContextSerializer(CustomUserSerializer):
-    """Кастомный сериализатор отображения профиля Мастера
-    в других контекстах."""
+    """Кастомный сериализатор профиля Мастера в других контекстах."""
     is_subscribed = serializers.SerializerMethodField()
     subscribers_count = serializers.SerializerMethodField()
 
@@ -245,6 +244,59 @@ class LocationSerializer(serializers.ModelSerializer):
                   'office_number')
 
 
+class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор Комментариев к Отзывам."""
+    author = serializers.SlugRelatedField(
+        default=serializers.CurrentUserDefault(),
+        slug_field='username',
+        read_only=True
+    )
+    pub_date = serializers.DateTimeField(read_only=True, format='%d.%m.%Y')
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date')
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор Отзывов к Сервисам."""
+    author = serializers.SlugRelatedField(
+        default=serializers.CurrentUserDefault(),
+        slug_field='username',
+        read_only=True
+    )
+    pub_date = serializers.DateTimeField(read_only=True, format='%d.%m.%Y')
+    comments = CommentSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'score', 'author', 'pub_date', 'comments')
+
+    def validate(self, data):
+        request = self.context['request']
+        author = request.user
+        service = get_object_or_404(
+            Service, pk=self.context['view'].kwargs.get('service_id')
+        )
+        if author == service.master:
+            raise ValidationError(
+                'Запрещено оставлять отзыв о качестве собственных услуг'
+            )
+        if request.method == 'POST':
+            if Review.objects.filter(service=service, author=author):
+                raise ValidationError('Можно оставить только один отзыв')
+        return data
+
+
+class ReviewContextSerializer(serializers.ModelSerializer):
+    """Сериализатор Отзывов в других контекстах."""
+    pub_date = serializers.DateTimeField(read_only=True, format='%d.%m.%Y')
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'score', 'author', 'pub_date')
+
+
 class ServiceSerializer(serializers.ModelSerializer):
     """Сериализатор Сервиса."""
     master = MasterContextSerializer(
@@ -258,7 +310,8 @@ class ServiceSerializer(serializers.ModelSerializer):
     )
     locations = LocationSerializer(many=True)
     image = Base64ImageField()
-    created = serializers.DateTimeField(read_only=True, format='%Y-%m-%d')
+    created = serializers.DateTimeField(read_only=True, format='%d.%m.%Y')
+    reviews = ReviewContextSerializer(read_only=True, many=True)
     rating = serializers.IntegerField(read_only=True)
     is_favorited = serializers.SerializerMethodField()
 
@@ -276,6 +329,7 @@ class ServiceSerializer(serializers.ModelSerializer):
                   'social_network_contacts',
                   'image',
                   'created',
+                  'reviews',
                   'rating',
                   'is_favorited')
 
@@ -324,41 +378,3 @@ class ServiceSerializer(serializers.ModelSerializer):
         data['activities'] = instance.activities.values()
         data['tags'] = instance.tags.values()
         return data
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    """Сериализатор Отзывов к Сервисам."""
-    author = serializers.SlugRelatedField(
-        default=serializers.CurrentUserDefault(),
-        slug_field='username',
-        read_only=True
-    )
-
-    class Meta:
-        model = Review
-        fields = ('id', 'text', 'score', 'author', 'pub_date')
-
-    def validate(self, data):
-        request = self.context['request']
-        author = request.user
-        service = get_object_or_404(
-            Service, pk=self.context['view'].kwargs.get('id')
-        )
-        if request.method == 'POST':
-            if Review.objects.filter(service=service, author=author):
-                raise ValidationError('Можно оставить только один отзыв')
-        return data
-
-
-class CommentSerializer(serializers.ModelSerializer):
-    """Сериализатор Комментариев к Отзывам."""
-    review = ReviewSerializer(read_only=True)
-    author = serializers.SlugRelatedField(
-        default=serializers.CurrentUserDefault(),
-        slug_field='username',
-        read_only=True
-    )
-
-    class Meta:
-        model = Comment
-        fields = ('id', 'review', 'text', 'author', 'pub_date')

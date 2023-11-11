@@ -1,11 +1,11 @@
-from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
+from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
 
 from djoser.conf import settings
 from djoser.views import UserViewSet
 
-from rest_framework import pagination, permissions, viewsets
+from rest_framework import permissions, viewsets
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -19,7 +19,7 @@ from services.models import (Activity,
                              Review,
                              Tag)
 
-from users.models import CustomUser, Subscribe
+from .permissions import IsAdminOrMasterOrReadOnly, IsAdminOrAuthorOrReadOnly
 
 from .serializers import (ActivitySerializer,
                           CommentSerializer,
@@ -30,7 +30,7 @@ from .serializers import (ActivitySerializer,
                           ServiceContextSerializer,
                           TagSerializer)
 
-from .permissions import IsAdminOrMasterOrReadOnly, IsAdminOrAuthorOrReadOnly
+from users.models import CustomUser, Subscribe
 
 from .utils import create_relation, delete_relation
 
@@ -46,12 +46,9 @@ class CustomUserViewSet(UserViewSet):
 
 class MasterViewSet(CustomUserViewSet):
     """Кастомный вьюсет Мастера."""
-    # pagination_class = pagination.PageNumberPagination
 
     def get_permissions(self):
-        if self.action == 'list':
-            self.permission_classes = settings.PERMISSIONS.master_list
-        elif self.action == 'retrieve':
+        if self.action == 'retrieve':
             self.permission_classes = settings.PERMISSIONS.master
         return super().get_permissions()
 
@@ -75,16 +72,9 @@ class ClientViewSet(CustomUserViewSet):
     """Кастомный вьюсет Клиента."""
 
     def get_queryset(self):
+        if self.action == 'list' and not self.request.user.is_staff:
+            return CustomUser.objects.filter(is_master=True)
         return CustomUser.objects.filter(is_master=False)
-
-    def get_serializer_class(self):
-        if self.action == "create":
-            if settings.USER_CREATE_PASSWORD_RETYPE:
-                return settings.SERIALIZERS.user_create_password_retype
-            return settings.SERIALIZERS.user_create
-        if self.action in ['list', 'retrieve']:
-            return settings.SERIALIZERS.user
-        return super().get_serializer_class()
 
     @action(methods=['post', 'delete'],
             detail=True,
@@ -155,7 +145,6 @@ class ServiceViewSet(viewsets.ModelViewSet):
     ).all()
     serializer_class = ServiceSerializer
     permission_classes = (IsAdminOrMasterOrReadOnly,)
-    # pagination_class = pagination.PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ServiceFilterSet
 
