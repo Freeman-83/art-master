@@ -303,7 +303,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class ReviewContextSerializer(serializers.ModelSerializer):
-    """Сериализатор Отзывов в других контекстах."""
+    """Сериализатор Отзывов к Сервисам в других контекстах."""
     pub_date = serializers.DateTimeField(read_only=True, format='%d.%m.%Y')
 
     class Meta:
