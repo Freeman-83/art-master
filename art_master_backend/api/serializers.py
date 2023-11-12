@@ -255,11 +255,19 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('id', 'text', 'author', 'pub_date')
+        fields = ('id',
+                  'review',
+                  'text',
+                  'author',
+                  'pub_date')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор Отзывов к Сервисам."""
+    service = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True
+    )
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
@@ -270,7 +278,13 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ('id', 'text', 'score', 'author', 'pub_date', 'comments')
+        fields = ('id',
+                  'service',
+                  'author',
+                  'text',
+                  'score',
+                  'pub_date',
+                  'comments')
 
     def validate(self, data):
         request = self.context['request']
