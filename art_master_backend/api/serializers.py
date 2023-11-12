@@ -97,15 +97,15 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
     password = serializers.CharField(
         required=False, style={'input_type': 'password'}
     )
-    main_field = CustomUser.USERNAME_FIELD
+    field = CustomUser.USERNAME_FIELD
     alt_field = CustomUser.ALT_FIELD
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = None
 
-        if self.context['request'].data.get(self.main_field):
-            self.fields[self.main_field] = serializers.CharField(required=False)
+        if self.context['request'].data.get(self.field):
+            self.fields[self.field] = serializers.CharField(required=False)
         else:
             self.fields[self.alt_field] = serializers.CharField(required=False)
 
@@ -113,8 +113,8 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
         password = data.get('password')
 
         params = {}
-        if self.context['request'].data.get(self.main_field):
-            params = {self.main_field: data.get(self.main_field)}
+        if self.context['request'].data.get(self.field):
+            params = {self.field: data.get(self.field)}
         else:
             params = {self.alt_field: data.get(self.alt_field)}
         self.user = authenticate(
