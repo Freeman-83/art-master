@@ -242,6 +242,9 @@ class LocationService(models.Model):
                                     name='unique_location_service')
         ]
 
+    def __str__(self):
+        return f'{self.location} {self.service}'
+
 
 class Favorite(models.Model):
     """Модель избранных Сервисов."""

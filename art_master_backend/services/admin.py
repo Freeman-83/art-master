@@ -47,7 +47,8 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
-    list_display = ('country',
+    list_display = ('id',
+                    'country',
                     'city',
                     'street',
                     'house_number',
@@ -61,9 +62,11 @@ class LocationAdmin(admin.ModelAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = (
-        'id', 'name', 'master', 'created', 'additions_in_favorite_count'
-    )
+    list_display = ('id',
+                    'name',
+                    'master',
+                    'created',
+                    'additions_in_favorite_count')
     list_display_links = ('name',)
     search_fields = ('name', 'master')
     list_filter = ('name', 'master')
