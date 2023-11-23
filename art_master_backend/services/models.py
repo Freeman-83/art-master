@@ -67,7 +67,8 @@ class Service(models.Model):
     master = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        verbose_name='Мастер'
+        verbose_name='Мастер',
+        related_name='services'
     )
     activities = models.ManyToManyField(
         Activity,
