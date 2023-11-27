@@ -2,6 +2,7 @@ import re
 import webcolors
 
 from django.contrib.auth import authenticate
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from drf_extra_fields.fields import Base64ImageField
@@ -363,7 +364,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     #     data.update({'activities': activities,
     #                  'tags': tags})
     #     return data
-
+    @transaction.atomic
     def create(self, validated_data):
         locations_list = validated_data.pop('locations')
         activities_list = validated_data.pop('activities')

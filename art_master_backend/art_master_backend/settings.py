@@ -135,8 +135,18 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', default=True)
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+
 DJOSER = {
     'HIDE_USERS': False,
+    'ACTIVATION_URL': '#/activation/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
     'SERIALIZERS': {
         'user_create': 'api.serializers.RegisterClientSerializer',
         'master_create': 'api.serializers.RegisterMasterSerializer',
