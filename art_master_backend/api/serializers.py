@@ -126,7 +126,7 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
             self.user = CustomUser.objects.filter(**params).first()
             if self.user and not self.user.check_password(password):
                 raise serializers.ValidationError(
-                    'Некорректные данные пользователя!'
+                    'Некорректный пароль пользователя!'
                 )
         if self.user and self.user.is_active:
             return data
