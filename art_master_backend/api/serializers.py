@@ -99,7 +99,7 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
         required=False, style={'input_type': 'password'}
     )
     field = CustomUser.USERNAME_FIELD
-    alt_field = CustomUser.ALT_FIELD
+    alt_field = CustomUser.ALT_USERNAME_FIELD
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

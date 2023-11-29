@@ -28,7 +28,7 @@ class CustomUser(AbstractUser):
     is_master = models.BooleanField('Статус Мастера', default=False)
 
     USERNAME_FIELD = 'email'
-    ALT_FIELD = 'phone_number'
+    ALT_USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['username', 'password']
 
     class Meta:
