@@ -8,7 +8,6 @@ from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
 from djoser.serializers import (UserSerializer,
@@ -295,12 +294,14 @@ class ReviewSerializer(serializers.ModelSerializer):
             Service, pk=self.context['view'].kwargs.get('service_id')
         )
         if author == service.master:
-            raise ValidationError(
+            raise serializers.ValidationError(
                 'Запрещено оставлять отзыв о качестве собственных услуг'
             )
         if request.method == 'POST':
             if Review.objects.filter(service=service, author=author):
-                raise ValidationError('Можно оставить только один отзыв')
+                raise serializers.ValidationError(
+                    'Можно оставить только один отзыв'
+                )
         return data
 
 
