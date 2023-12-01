@@ -64,9 +64,6 @@ class MasterViewSet(CustomUserViewSet):
             return settings.SERIALIZERS.master
         return super().get_serializer_class()
 
-    def perform_create(self, serializer):
-        serializer.save(is_master=True)
-
 
 class ClientViewSet(CustomUserViewSet):
     """Кастомный вьюсет Клиента."""
