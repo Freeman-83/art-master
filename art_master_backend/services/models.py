@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.gis.db import models as gismodels
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -39,25 +40,19 @@ class Activity(models.Model):
 
 class Location(models.Model):
     """Модель Локации."""
-    country = models.CharField('Страна', max_length=50)
-    city = models.CharField('Город', max_length=50)
-    street = models.CharField('Улица', max_length=100)
-    house_number = models.IntegerField('Номер дома')
-    building = models.CharField(
-        'Корпус/Строение',
-        max_length=1,
-        null=True,
-        blank=True
+    address = models.CharField(
+        verbose_name='Адрес',
+        max_length=256
     )
-    office_number = models.IntegerField(
-        'Офис',
-        null=True,
-        blank=True
-    )
+    point = gismodels.PointField(spatial_index=True)
+
+    class Meta:
+        ordering = ['address']
+        verbose_name = 'Локация'
+        verbose_name_plural = 'Локации'
 
     def __str__(self):
-        return (f'{self.city}, ул.{self.street}, '
-                f'д.{self.house_number}, оф.{self.office_number}')
+        return self.address
 
 
 class Service(models.Model):

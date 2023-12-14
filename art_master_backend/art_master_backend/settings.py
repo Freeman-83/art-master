@@ -94,9 +94,10 @@ WSGI_APPLICATION = 'art_master_backend.wsgi.application'
 #     }
 # }
 
+# django.db.backends.postgresql
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.getenv('POSTGRES_DB', 'django'),
         'USER': os.getenv('POSTGRES_USER', 'django'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),

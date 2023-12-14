@@ -237,12 +237,8 @@ class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = ('id',
-                  'country',
-                  'city',
-                  'street',
-                  'house_number',
-                  'building',
-                  'office_number')
+                  'address',
+                  'point')
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -377,7 +373,7 @@ class ServiceSerializer(serializers.ModelSerializer):
         service.tags.set(tags_list)
 
         for location in locations_list:
-            current_location = Location.objects.create(**location)
+            current_location, _ = Location.objects.get_or_create(**location)
             LocationService.objects.create(
                 location=current_location, service=service
             )
