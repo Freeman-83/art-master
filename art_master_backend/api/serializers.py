@@ -19,25 +19,9 @@ from services.models import (Activity,
                              Location,
                              LocationService,
                              Review,
-                             Service,
-                             Tag)
+                             Service)
 
 from users.models import CustomUser
-
-
-class Hex2NameColor(serializers.Field):
-    """Кастомное поле для преобразования цветового кода."""
-
-    def to_representation(self, value):
-        return value
-
-    def to_internal_value(self, data):
-        try:
-            data = webcolors.hex_to_name(data)
-        except ValueError:
-            raise serializers.ValidationError('Для этого цвета нет имени')
-        return data
-
 
 class ServiceContextSerializer(serializers.ModelSerializer):
     """Сериализатор отображения профиля рецепта в других контекстах."""
@@ -208,18 +192,6 @@ class MasterContextSerializer(CustomUserSerializer):
         return master.subscribers.all().count()
 
 
-class TagSerializer(serializers.ModelSerializer):
-    """Сериализатор Тегов."""
-    color = Hex2NameColor()
-
-    class Meta:
-        model = Tag
-        fields = ('id',
-                  'name',
-                  'slug',
-                  'color')
-
-
 class ActivitySerializer(serializers.ModelSerializer):
     """Сериализатор Активностей."""
 
@@ -318,9 +290,6 @@ class ServiceSerializer(serializers.ModelSerializer):
     activities = serializers.PrimaryKeyRelatedField(
         queryset=Activity.objects.all(), many=True
     )
-    tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(), many=True
-    )
     locations = LocationSerializer(many=True)
     image = Base64ImageField()
     created = serializers.DateTimeField(read_only=True, format='%d.%m.%Y')
@@ -334,7 +303,6 @@ class ServiceSerializer(serializers.ModelSerializer):
                   'name',
                   'description',
                   'activities',
-                  'tags',
                   'master',
                   'locations',
                   'site_address',
@@ -365,12 +333,9 @@ class ServiceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         locations_list = validated_data.pop('locations')
         activities_list = validated_data.pop('activities')
-        tags_list = validated_data.pop('tags')
 
         service = Service.objects.create(**validated_data)
-
         service.activities.set(activities_list)
-        service.tags.set(tags_list)
 
         for location in locations_list:
             current_location, _ = Location.objects.get_or_create(**location)
@@ -389,5 +354,4 @@ class ServiceSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['activities'] = instance.activities.values()
-        data['tags'] = instance.tags.values()
         return data

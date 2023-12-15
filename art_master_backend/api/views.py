@@ -16,8 +16,7 @@ from services.models import (Activity,
                              Favorite,
                              Location,
                              Service,
-                             Review,
-                             Tag)
+                             Review)
 
 from .permissions import IsAdminOrMasterOrReadOnly, IsAdminOrAuthorOrReadOnly
 
@@ -27,8 +26,7 @@ from .serializers import (ActivitySerializer,
                           MasterContextSerializer,
                           ReviewSerializer,
                           ServiceSerializer,
-                          ServiceContextSerializer,
-                          TagSerializer)
+                          ServiceContextSerializer)
 
 from users.models import CustomUser, Subscribe
 
@@ -108,13 +106,6 @@ class ClientViewSet(CustomUserViewSet):
         )
 
         return self.get_paginated_response(serializer.data)
-
-
-class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    """Вьюсет Тегов."""
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-    pagination_class = None
 
 
 class ActivityViewSet(viewsets.ReadOnlyModelViewSet):

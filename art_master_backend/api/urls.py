@@ -7,8 +7,7 @@ from .views import (ActivityViewSet,
                     ClientViewSet,
                     MasterViewSet,
                     ReviewViewSet,
-                    ServiceViewSet,
-                    TagViewSet)
+                    ServiceViewSet)
 
 app_name = 'api'
 
@@ -16,7 +15,6 @@ router = routers.DefaultRouter()
 
 router.register('services', ServiceViewSet)
 router.register('activities', ActivityViewSet)
-router.register('tags', TagViewSet)
 router.register('users', ClientViewSet, basename='users')
 router.register('masters', MasterViewSet, basename='masters')
 router.register(

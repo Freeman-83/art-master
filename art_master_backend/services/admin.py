@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.gis.admin import OSMGeoAdmin
 
 from .models import (Activity,
                      ActivityService,
@@ -6,14 +7,7 @@ from .models import (Activity,
                      Location,
                      LocationService,
                      Review,
-                     Service,
-                     Tag,
-                     TagService)
-
-
-class TagInService(admin.TabularInline):
-    model = TagService
-    min_num = 1
+                     Service)
 
 
 class ActivityInService(admin.TabularInline):
@@ -36,17 +30,8 @@ class ActivityAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'slug', 'color')
-    search_fields = ('name',)
-    list_filter = ('name',)
-    prepopulated_fields = {'slug': ('name',)}
-    empty_value_display = '-пусто-'
-
-
 @admin.register(Location)
-class LocationAdmin(admin.ModelAdmin):
+class LocationAdmin(OSMGeoAdmin):
     list_display = ('id',
                     'address',
                     'point')
@@ -68,7 +53,7 @@ class ServiceAdmin(admin.ModelAdmin):
     list_filter = ('name', 'master')
     empty_value_display = '-пусто-'
 
-    inlines = [ActivityInService, TagInService, LocationInService]
+    inlines = [ActivityInService, LocationInService]
 
     @admin.display(description='Количество добавлений в избранное')
     def additions_in_favorite_count(self, service):
@@ -98,14 +83,6 @@ class ActivityServiceAdmin(admin.ModelAdmin):
     list_display = ('id', 'activity', 'service')
     search_fields = ('activity', 'service')
     list_filter = ('activity', 'service')
-    empty_value_display = '-пусто-'
-
-
-@admin.register(TagService)
-class TagServiceAdmin(admin.ModelAdmin):
-    list_display = ('id', 'tag', 'service')
-    search_fields = ('tag', 'service')
-    list_filter = ('tag', 'service')
     empty_value_display = '-пусто-'
 
 

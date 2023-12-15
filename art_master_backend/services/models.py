@@ -8,21 +8,6 @@ from colorfield.fields import ColorField
 from phonenumber_field.modelfields import PhoneNumberField
 
 
-class Tag(models.Model):
-    """Модель Тега."""
-    name = models.CharField('Tag', unique=True, max_length=200)
-    slug = models.SlugField('Slug', unique=True, max_length=200)
-    color = ColorField('Цвет', unique=True, max_length=7)
-
-    class Meta:
-        ordering = ['name']
-        verbose_name = 'Tag'
-        verbose_name_plural = 'Тags'
-
-    def __str__(self):
-        return self.name
-
-
 class Activity(models.Model):
     """Модель Активности."""
     name = models.CharField('Вид деятельности', unique=True, max_length=256)
@@ -38,7 +23,7 @@ class Activity(models.Model):
         return self.name
 
 
-class Location(models.Model):
+class Location(gismodels.Model):
     """Модель Локации."""
     address = models.CharField(
         verbose_name='Адрес',
@@ -48,8 +33,8 @@ class Location(models.Model):
 
     class Meta:
         ordering = ['address']
-        verbose_name = 'Локация'
-        verbose_name_plural = 'Локации'
+        verbose_name = 'Location'
+        verbose_name_plural = 'Locations'
 
     def __str__(self):
         return self.address
@@ -69,11 +54,6 @@ class Service(models.Model):
         Activity,
         through='ActivityService',
         verbose_name='Вид деятельности'
-    )
-    tags = models.ManyToManyField(
-        Tag,
-        through='TagService',
-        verbose_name='Теги'
     )
     locations = models.ManyToManyField(
         Location,
@@ -165,31 +145,6 @@ class Comment(models.Model):
         ordering = ['-pub_date']
         verbose_name = 'Comment'
         verbose_name_plural = 'Comments'
-
-
-class TagService(models.Model):
-    """Модель отношений Тег-Сервис."""
-    tag = models.ForeignKey(
-        Tag,
-        on_delete=models.CASCADE,
-        related_name='in_services'
-    )
-    service = models.ForeignKey(
-        Service,
-        on_delete=models.CASCADE,
-        related_name='in_tags'
-    )
-
-    class Meta:
-        ordering = ['tag']
-        verbose_name_plural = 'Tags Services'
-        constraints = [
-            models.UniqueConstraint(fields=['tag', 'service'],
-                                    name='unique_tag_service')
-        ]
-
-    def __str__(self):
-        return f'{self.tag} {self.service}'
 
 
 class ActivityService(models.Model):
