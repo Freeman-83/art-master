@@ -1,6 +1,8 @@
 import re
-import webcolors
 
+from geopy import Yandex
+
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -205,6 +207,8 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 class LocationSerializer(serializers.ModelSerializer):
     """Сериализатор Локации."""
+    address = serializers.CharField(required=False)
+    point = serializers.CharField(required=False)
 
     class Meta:
         model = Location
@@ -319,6 +323,23 @@ class ServiceSerializer(serializers.ModelSerializer):
                                     fields=['master', 'name'])
         ]
 
+    def get_location(self, location):
+        if location.get('address'):
+            location_data = Yandex(
+                api_key=settings.API_KEY
+            ).geocode(location['address'])
+            location['address'] = location_data.address
+            location['point'] = f'POINT({location_data.longitude} {location_data.latitude})'
+
+        elif location.get('point'):
+            point = location.get('point')
+            location_data = Yandex(api_key=settings.API_KEY).reverse(point)
+
+            location['address'] = location_data.address
+            location['point'] = f'POINT({point})'
+
+        return location
+
     # def validate(self, data):
     #     activities_list = self.initial_data('activities')
     #     tags_list = self.initial_data('tags')
@@ -329,6 +350,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     #     data.update({'activities': activities,
     #                  'tags': tags})
     #     return data
+
     @transaction.atomic
     def create(self, validated_data):
         locations_list = validated_data.pop('locations')
@@ -338,6 +360,7 @@ class ServiceSerializer(serializers.ModelSerializer):
         service.activities.set(activities_list)
 
         for location in locations_list:
+            location = self.get_location(location)
             current_location, _ = Location.objects.get_or_create(**location)
             LocationService.objects.create(
                 location=current_location, service=service
